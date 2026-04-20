@@ -1,0 +1,170 @@
+// ============================================================
+// Enums / Union Types
+// ============================================================
+
+export type AccountType = 'bank' | 'e-wallet' | 'cash' | 'credit_card' | 'investment';
+
+export type TransactionType = 'income' | 'expense' | 'transfer';
+
+export type BudgetStatus = 'green' | 'yellow' | 'red';
+
+// ============================================================
+// Database Entity Interfaces
+// ============================================================
+
+export interface Account {
+  id: string;
+  user_id: string;
+  name: string;
+  type: AccountType;
+  balance: number;
+  credit_limit: number | null;
+  due_date: number | null;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Category {
+  id: string;
+  user_id: string;
+  name: string;
+  icon: string;
+  is_default: boolean;
+  created_at: string;
+}
+
+export interface Transaction {
+  id: string;
+  user_id: string;
+  account_id: string;
+  destination_account_id: string | null;
+  category_id: string | null;
+  type: TransactionType;
+  amount: number;
+  note: string | null;
+  date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Budget {
+  id: string;
+  user_id: string;
+  category_id: string;
+  month: string;
+  limit_amount: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TransactionPreset {
+  id: string;
+  user_id: string;
+  name: string;
+  type: TransactionType;
+  category_id: string | null;
+  account_id: string;
+  destination_account_id: string | null;
+  amount: number;
+  created_at: string;
+}
+
+export interface UserProfile {
+  id: string;
+  display_name: string | null;
+  onboarding_completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
+// Transaction Modal State Machine
+// ============================================================
+
+export type TransactionModalStep = 'type' | 'category' | 'numpad' | 'account' | 'details';
+
+export type TransactionModalState = {
+  step: TransactionModalStep;
+  type: TransactionType | null;
+  categoryId: string | null;
+  amount: number;
+  accountId: string | null;
+  destinationAccountId: string | null;
+  note: string;
+  date: Date;
+};
+
+// ============================================================
+// Filters
+// ============================================================
+
+export interface TransactionFilters {
+  accountId?: string;
+  categoryId?: string;
+  type?: TransactionType;
+  month?: string;
+  search?: string;
+}
+
+// ============================================================
+// Form Input Types
+// ============================================================
+
+export interface AccountFormInput {
+  name: string;
+  type: AccountType;
+  balance: number;
+  credit_limit?: number;
+  due_date?: number;
+}
+
+export interface TransactionFormInput {
+  type: TransactionType;
+  account_id: string;
+  destination_account_id?: string;
+  category_id?: string;
+  amount: number;
+  note?: string;
+  date: string;
+}
+
+export interface BudgetFormInput {
+  category_id: string;
+  month: string;
+  limit_amount: number;
+}
+
+export interface PresetFormInput {
+  name: string;
+  type: TransactionType;
+  category_id?: string;
+  account_id: string;
+  destination_account_id?: string;
+  amount: number;
+}
+
+export interface CategoryFormInput {
+  name: string;
+  icon: string;
+}
+
+export interface ProfileFormInput {
+  display_name: string;
+}
+
+// ============================================================
+// Computed / Display Types
+// ============================================================
+
+export interface BudgetWithSpending extends Budget {
+  spent: number;
+  status: BudgetStatus;
+  category?: Category;
+}
+
+export interface TransactionWithRelations extends Transaction {
+  category?: Category;
+  account?: Account;
+  destination_account?: Account;
+}
