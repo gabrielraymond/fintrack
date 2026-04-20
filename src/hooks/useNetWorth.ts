@@ -17,7 +17,7 @@ export function calculateNetWorth(accounts: Account[]): number {
 
 export function useNetWorth() {
   const { data, isLoading, error, refetch } = useAccounts(0);
-  const accounts = data?.data ?? [];
+  const accounts = useMemo(() => data?.data ?? [], [data?.data]);
 
   const netWorth = useMemo(() => calculateNetWorth(accounts), [accounts]);
 

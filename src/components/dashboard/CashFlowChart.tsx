@@ -75,8 +75,8 @@ export default function CashFlowChart({ transactions }: CashFlowChartProps) {
               width={40}
             />
             <Tooltip
-              formatter={(value: number) => formatIDR(value)}
-              labelFormatter={(label: string) => `Tanggal ${label}`}
+              formatter={(value) => formatIDR(Number(value))}
+              labelFormatter={(label) => `Tanggal ${label}`}
             />
             <Legend />
             <Bar dataKey="Pemasukan" fill="#22c55e" radius={[2, 2, 0, 0]} />

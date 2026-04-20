@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import CreditCardProgress from '../CreditCardProgress';
 
@@ -29,12 +29,6 @@ describe('CreditCardProgress', () => {
 
   it('shows due date warning when due date is within 7 days', () => {
     // Set a due date that is within 7 days from now
-    const today = new Date();
-    const dueDateDay = today.getDate() + 3; // 3 days from now
-    const safeDueDate = dueDateDay > 28 ? 1 : dueDateDay; // handle month overflow simply
-
-    // We need to mock the date to make this deterministic
-    const realDate = global.Date;
     const mockNow = new Date(2024, 5, 10); // June 10, 2024
 
     vi.useFakeTimers();

@@ -44,7 +44,6 @@ function createSupabaseMock(overrides: Record<string, unknown> = {}) {
 }
 
 let supabaseChain: ReturnType<typeof createSupabaseMock>;
-let supabaseFromTable: string | undefined;
 
 // For delete tests we need per-table chains
 let transactionsChain: ReturnType<typeof createSupabaseMock>;
@@ -52,7 +51,6 @@ let transactionsChain: ReturnType<typeof createSupabaseMock>;
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => ({
     from: (table: string) => {
-      supabaseFromTable = table;
       if (table === 'transactions') return transactionsChain;
       return supabaseChain;
     },

@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { ToastProvider, useToast } from '../ToastProvider';
 
 function ToastTrigger() {
-  const { showError, showSuccess, dismiss } = useToast();
+  const { showError, showSuccess } = useToast();
   return (
     <div>
       <button onClick={() => showError('Gagal menyimpan')}>show error</button>

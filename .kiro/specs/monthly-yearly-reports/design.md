@@ -89,7 +89,7 @@ interface ViewToggleProps {
 
 ### ReportSummaryCard
 
-Menampilkan total pemasukan, total pengeluaran, dan selisih bersih. Reuse pola dari `MonthlySummaryCard` yang sudah ada.
+Menampilkan total pemasukan, total pengeluaran, dan selisih bersih. Warna hijau untuk selisih positif, merah untuk negatif.
 
 ```typescript
 interface ReportSummaryCardProps {
@@ -306,8 +306,23 @@ function getShortMonthName(monthIndex: number): string;
 // Nama bulan penuh Bahasa Indonesia
 function getFullMonthName(monthIndex: number): string;
 
-// Menghasilkan array warna untuk pie chart segments
+// Menghasilkan array warna unik untuk pie chart segments
 function getCategoryColors(count: number): string[];
+
+// Menentukan apakah navigasi ke bulan berikutnya diizinkan
+function canNavigateNext(month: number, year: number): boolean;
+
+// Navigasi ke bulan sebelumnya (wraps Dec→Jan across years)
+function getPreviousMonth(month: number, year: number): { month: number; year: number };
+
+// Navigasi ke bulan berikutnya (wraps Jan→Dec across years)
+function getNextMonth(month: number, year: number): { month: number; year: number };
+
+// Menentukan warna indikator berdasarkan percentage change dan tipe metrik
+function getComparisonIndicator(percentageChange: number | null, isExpense: boolean): {
+  color: 'green' | 'red' | 'neutral';
+  direction: 'up' | 'down' | 'none';
+};
 ```
 
 
@@ -317,7 +332,7 @@ function getCategoryColors(count: number): string[];
 
 ### Property 1: Report Summary Correctness
 
-*For any* set of transactions, `calculateReportSummary` SHALL produce `totalIncome` equal to the sum of all income-type transaction amounts, `totalExpenses` equal to the sum of all expense-type transaction amounts, and `netChange` equal to `totalIncome - totalExpenses`.
+*For any* set of transactions, `calculateReportSummary` SHALL produce `totalIncome` equal to the sum of all income-type transaction amounts, `totalExpenses` equal to the sum of all expense-type transaction amounts, and `netChange` equal to `totalIncome - totalExpenses`. Transfer-type transactions SHALL NOT contribute to either total.
 
 **Validates: Requirements 7.1, 8.1, 8.2**
 
@@ -335,7 +350,7 @@ function getCategoryColors(count: number): string[];
 
 ### Property 4: Period Navigation Round-Trip
 
-*For any* valid month/year combination, navigating to the previous month and then to the next month SHALL return to the original month/year, and vice versa.
+*For any* valid month/year combination, applying `getPreviousMonth` followed by `getNextMonth` SHALL return the original month/year, and applying `getNextMonth` followed by `getPreviousMonth` SHALL also return the original month/year.
 
 **Validates: Requirements 2.2, 2.3**
 
@@ -347,13 +362,13 @@ function getCategoryColors(count: number): string[];
 
 ### Property 6: Future Month Navigation Constraint
 
-*For any* month/year combination that is equal to or later than the current month/year, the `canGoNext` flag SHALL be `false`; for any month/year strictly before the current month/year, `canGoNext` SHALL be `true`.
+*For any* month/year combination that is equal to or later than the current month/year, `canNavigateNext` SHALL return `false`; for any month/year strictly before the current month/year, `canNavigateNext` SHALL return `true`.
 
 **Validates: Requirements 2.5**
 
 ### Property 7: Monthly Trend Calculation
 
-*For any* set of income and expense transactions spanning multiple months, `calculateMonthlyTrend` SHALL produce one entry per month where each entry's `income` equals the sum of income-type transaction amounts in that month and `expense` equals the sum of expense-type transaction amounts in that month.
+*For any* set of income and expense transactions spanning multiple months, `calculateMonthlyTrend` SHALL produce one entry per month where each entry's `income` equals the sum of income-type transaction amounts in that month and `expense` equals the sum of expense-type transaction amounts in that month. Transfer-type transactions SHALL be excluded.
 
 **Validates: Requirements 5.1**
 
@@ -365,7 +380,7 @@ function getCategoryColors(count: number): string[];
 
 ### Property 9: Comparison Color Logic
 
-*For any* percentage change value and metric type, the indicator color SHALL be green when the change is favorable (positive for income/net, negative for expenses) and red when unfavorable (negative for income/net, positive for expenses).
+*For any* percentage change value and metric type: when `isExpense` is false, positive change SHALL yield green/up and negative change SHALL yield red/down; when `isExpense` is true, positive change SHALL yield red/up (unfavorable) and negative change SHALL yield green/down (favorable). When percentage change is null, the indicator SHALL be neutral/none.
 
 **Validates: Requirements 6.3, 6.4, 6.5, 6.6**
 
@@ -377,7 +392,7 @@ function getCategoryColors(count: number): string[];
 
 ### Property 11: IDR Short Format
 
-*For any* non-negative integer amount, `formatIDRShort` SHALL return a non-empty string. For amounts ≥ 1.000.000, the result SHALL contain "jt". For amounts ≥ 1.000 and < 1.000.000, the result SHALL contain "rb".
+*For any* non-negative integer amount, `formatIDRShort` SHALL return a non-empty string. For amounts ≥ 1.000.000, the result SHALL contain "jt". For amounts ≥ 1.000 and < 1.000.000, the result SHALL contain "rb". For amounts < 1.000, the result SHALL be the numeric string representation.
 
 **Validates: Requirements 5.4**
 
@@ -415,11 +430,12 @@ Property tests fokus pada fungsi pure di `report-utils.ts`:
 - `calculateCategoryExpenses` — Property 2, 3
 - `calculateMonthlyTrend` — Property 2, 7
 - `calculatePercentageChange` — Property 8
-- `calculateMonthOverMonth` / color logic — Property 9
+- `getComparisonIndicator` — Property 9
 - `calculateYearlySummary` — Property 10
 - `formatIDRShort` — Property 11
 - `getFullMonthName` / `getShortMonthName` — Property 5
-- Period navigation logic — Property 4, 6
+- `getPreviousMonth` / `getNextMonth` — Property 4
+- `canNavigateNext` — Property 6
 
 ### Unit Tests (example-based)
 
@@ -431,16 +447,19 @@ Unit tests ditempatkan di `src/components/reports/__tests__/` dan fokus pada:
 - PeriodSelector default state (bulan berjalan)
 - ViewToggle default state ("Bulanan")
 - Tooltip content pada chart interaction
-- Warna indikator pada MonthOverMonthComparison
+- Warna indikator pada MonthOverMonthComparison (hijau/merah berdasarkan konteks)
+- Warna selisih bersih pada ReportSummaryCard (positif = hijau, negatif = merah)
 
 ### Integration Tests
 
 - Verifikasi bahwa query Supabase mengecualikan transaksi dari soft-deleted accounts
-- Verifikasi navigasi "Laporan" ada di Sidebar dan BottomNav
+- Verifikasi navigasi "Laporan" ada di Sidebar dan BottomNav dan mengarah ke `/reports`
 - Verifikasi route `/reports` merender Reports page
+- Verifikasi toggle Bulanan/Tahunan menampilkan komponen yang sesuai
 
 ### Test Dependencies
 
-- `fast-check` — library property-based testing untuk JavaScript/TypeScript
+- `fast-check` — library property-based testing untuk JavaScript/TypeScript (perlu diinstal)
 - `@testing-library/react` — sudah terinstal untuk component testing
+- `@testing-library/user-event` — sudah terinstal untuk simulating user interactions
 - `vitest` — sudah terinstal sebagai test runner
