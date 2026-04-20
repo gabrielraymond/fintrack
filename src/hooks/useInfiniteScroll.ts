@@ -35,7 +35,7 @@ async function fetchTransactions(
 
   let query = supabase
     .from('transactions')
-    .select('*, category:categories(name, icon), account:accounts(name)')
+    .select('*, category:categories(name, icon), account:accounts!transactions_account_id_fkey(name)')
     .eq('user_id', userId)
     .order('date', { ascending: false })
     .order('created_at', { ascending: false })

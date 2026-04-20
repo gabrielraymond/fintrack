@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/providers/AuthProvider';
 
 const navItems = [
   { label: 'Beranda', href: '/dashboard', icon: HomeIcon },
@@ -57,8 +58,25 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
+function LogoutIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
+
 export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
+  const { signOut } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   return (
     <nav
@@ -89,6 +107,16 @@ export default function Sidebar({ className }: { className?: string }) {
           );
         })}
       </ul>
+      <div className="px-2 pb-4">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body text-danger hover:bg-danger/10 transition-colors w-full"
+          aria-label="Keluar"
+        >
+          <LogoutIcon className="w-5 h-5 flex-shrink-0" />
+          <span>Keluar</span>
+        </button>
+      </div>
     </nav>
   );
 }

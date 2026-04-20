@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
@@ -440,6 +441,26 @@ function DangerZoneSection() {
 
 // ── Settings Page ───────────────────────────────────────────
 
+// ── Logout Section ───────────────────────────────────────────
+
+function LogoutSection() {
+  const { signOut } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/login');
+  };
+
+  return (
+    <Card>
+      <Button variant="ghost" onClick={handleLogout} className="w-full text-danger hover:bg-danger/10">
+        Keluar dari Akun
+      </Button>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   return (
     <div className="p-4 max-w-3xl mx-auto">
@@ -449,6 +470,7 @@ export default function SettingsPage() {
         <PresetSection />
         <CategorySection />
         <ExportSection />
+        <LogoutSection />
         <DangerZoneSection />
       </div>
     </div>
