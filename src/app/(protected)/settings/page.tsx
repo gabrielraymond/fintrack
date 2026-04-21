@@ -391,15 +391,11 @@ function DangerZoneSection() {
     try {
       const supabase = createClient();
 
-      // Delete all user data in order (respecting foreign keys)
-      await supabase.from('transaction_presets').delete().eq('user_id', user.id);
-      await supabase.from('budgets').delete().eq('user_id', user.id);
-      await supabase.from('transactions').delete().eq('user_id', user.id);
-      await supabase.from('categories').delete().eq('user_id', user.id);
-      await supabase.from('accounts').delete().eq('user_id', user.id);
-      await supabase.from('user_profiles').delete().eq('id', user.id);
+      // Call RPC that deletes all data + removes user from auth.users
+      const { error } = await supabase.rpc('delete_user_account');
+      if (error) throw error;
 
-      // Sign out after deletion
+      // Sign out after deletion (clears local session)
       await signOut();
     } catch {
       showError('Gagal menghapus akun. Silakan coba lagi.');

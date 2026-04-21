@@ -45,7 +45,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase.auth]);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // No email confirmation needed — user is auto-confirmed
+        // via Supabase Dashboard setting: Auth > Settings > disable "Confirm email"
+        emailRedirectTo: undefined,
+      },
+    });
     // Profile & categories are auto-created by database trigger on auth.users
     return { error, user: data.user ?? null };
   }, [supabase]);

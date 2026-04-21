@@ -18,7 +18,7 @@ export default function RegisterPage() {
     setError(null);
     setIsSubmitting(true);
 
-    const { error } = await signUp(email, password);
+    const { error, user } = await signUp(email, password);
 
     if (error) {
       if (error.message?.toLowerCase().includes('already registered') ||
@@ -28,6 +28,15 @@ export default function RegisterPage() {
       } else {
         setError('Pendaftaran gagal. Silakan coba lagi.');
       }
+      setIsSubmitting(false);
+      return;
+    }
+
+    // If email confirmation is still enabled and user needs to confirm,
+    // Supabase returns a user with identities = [] (fake user).
+    // When confirmation is disabled, user is immediately valid.
+    if (user && user.identities && user.identities.length === 0) {
+      setError('Email sudah terdaftar. Silakan gunakan email lain atau masuk.');
       setIsSubmitting(false);
       return;
     }
