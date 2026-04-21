@@ -75,8 +75,12 @@ describe('Property 1: Budget Threshold Alert Creation', () => {
           });
         }
         if (table === 'notifications') {
+          const selectChain: Record<string, unknown> = {};
+          selectChain.eq = vi.fn().mockReturnValue(selectChain);
+          selectChain.limit = vi.fn().mockReturnValue({ data: [], error: null });
           return {
-            upsert: vi.fn().mockImplementation((row: Record<string, unknown>) => {
+            select: vi.fn().mockReturnValue(selectChain),
+            insert: vi.fn().mockImplementation((row: Record<string, unknown>) => {
               createdNotifications.push({
                 type: row.type as string,
                 message: row.message as string,

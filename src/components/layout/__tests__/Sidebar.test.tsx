@@ -11,9 +11,13 @@ vi.mock('@/providers/AuthProvider', () => ({
   useAuth: vi.fn(() => ({ signOut: vi.fn() })),
 }));
 
+vi.mock('@/components/layout/NotificationBell', () => ({
+  default: () => <div data-testid="notification-bell" />,
+}));
+
 import { usePathname } from 'next/navigation';
 
-const navLabels = ['Beranda', 'Transaksi', 'Akun', 'Anggaran', 'Laporan', 'Pengaturan'];
+const navLabels = ['Beranda', 'Transaksi', 'Akun', 'Anggaran', 'Goals', 'Laporan', 'Pengaturan'];
 
 describe('Sidebar', () => {
   it('renders a nav element with proper aria-label', () => {
@@ -26,7 +30,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('FinTrack')).toBeInTheDocument();
   });
 
-  it('renders all six navigation items in Bahasa Indonesia', () => {
+  it('renders all seven navigation items', () => {
     render(<Sidebar />);
     for (const label of navLabels) {
       expect(screen.getByText(label)).toBeInTheDocument();
@@ -56,7 +60,7 @@ describe('Sidebar', () => {
 
   it('renders correct hrefs for all nav items', () => {
     render(<Sidebar />);
-    const expectedHrefs = ['/dashboard', '/transactions', '/accounts', '/budgets', '/reports', '/settings'];
+    const expectedHrefs = ['/dashboard', '/transactions', '/accounts', '/budgets', '/goals', '/reports', '/settings'];
     const links = screen.getAllByRole('link');
     expect(links.map((l) => l.getAttribute('href'))).toEqual(expectedHrefs);
   });

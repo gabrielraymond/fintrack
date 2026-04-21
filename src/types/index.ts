@@ -8,7 +8,11 @@ export type TransactionType = 'income' | 'expense' | 'transfer';
 
 export type BudgetStatus = 'green' | 'yellow' | 'red';
 
-export type NotificationType = 'budget_alert' | 'cc_reminder' | 'large_transaction';
+export type NotificationType = 'budget_alert' | 'cc_reminder' | 'large_transaction' | 'goal_milestone';
+
+export type GoalCategory = 'tabungan' | 'dana_darurat' | 'liburan' | 'pendidikan' | 'pelunasan_hutang' | 'lainnya';
+
+export type GoalStatus = 'active' | 'completed' | 'cancelled';
 
 // ============================================================
 // Database Entity Interfaces
@@ -59,6 +63,29 @@ export interface Budget {
   limit_amount: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface FinancialGoal {
+  id: string;
+  user_id: string;
+  name: string;
+  category: GoalCategory;
+  target_amount: number;
+  current_amount: number;
+  target_date: string | null;
+  note: string | null;
+  status: GoalStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoalContribution {
+  id: string;
+  goal_id: string;
+  user_id: string;
+  amount: number; // positif = kontribusi, negatif = penarikan
+  note: string | null;
+  created_at: string;
 }
 
 export interface TransactionPreset {
@@ -167,6 +194,19 @@ export interface CategoryFormInput {
 
 export interface ProfileFormInput {
   display_name: string;
+}
+
+export interface GoalFormInput {
+  name: string;
+  category: GoalCategory;
+  target_amount: number;
+  target_date?: string;
+  note?: string;
+}
+
+export interface ContributionFormInput {
+  amount: number;
+  note?: string;
 }
 
 // ============================================================

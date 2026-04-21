@@ -8,7 +8,7 @@ vi.mock('next/navigation', () => ({
 
 import { usePathname } from 'next/navigation';
 
-const navLabels = ['Beranda', 'Transaksi', 'Akun', 'Anggaran', 'Laporan', 'Pengaturan'];
+const navLabels = ['Beranda', 'Transaksi', 'Akun', 'Anggaran', 'Goals', 'Laporan', 'Pengaturan'];
 
 describe('BottomNav', () => {
   it('renders a nav element with proper aria-label', () => {
@@ -16,7 +16,7 @@ describe('BottomNav', () => {
     expect(screen.getByRole('navigation', { name: 'Navigasi utama' })).toBeInTheDocument();
   });
 
-  it('renders all six navigation items in Bahasa Indonesia', () => {
+  it('renders all seven navigation items', () => {
     render(<BottomNav />);
     for (const label of navLabels) {
       expect(screen.getByText(label)).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe('BottomNav', () => {
 
   it('renders correct hrefs for all nav items', () => {
     render(<BottomNav />);
-    const expectedHrefs = ['/dashboard', '/transactions', '/accounts', '/budgets', '/reports', '/settings'];
+    const expectedHrefs = ['/dashboard', '/transactions', '/accounts', '/budgets', '/goals', '/reports', '/settings'];
     const links = screen.getAllByRole('link');
     expect(links.map((l) => l.getAttribute('href'))).toEqual(expectedHrefs);
   });

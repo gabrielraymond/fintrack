@@ -25,13 +25,13 @@ describe('DEFAULT_CATEGORIES', () => {
 });
 
 describe('ACCOUNT_TYPES', () => {
-  it('contains all five account types', () => {
+  it('contains all seven account types', () => {
     const values = ACCOUNT_TYPES.map((t) => t.value);
-    expect(values).toEqual(['bank', 'e-wallet', 'cash', 'credit_card', 'investment']);
+    expect(values).toEqual(['bank', 'e-wallet', 'cash', 'credit_card', 'investment', 'tabungan', 'dana_darurat']);
   });
 
   it('has Indonesian labels for all types', () => {
     const labels = ACCOUNT_TYPES.map((t) => t.label);
-    expect(labels).toEqual(['Bank', 'Dompet Digital', 'Tunai', 'Kartu Kredit', 'Investasi']);
+    expect(labels).toEqual(['Bank', 'Dompet Digital', 'Tunai', 'Kartu Kredit', 'Investasi', 'Tabungan', 'Dana Darurat']);
   });
 });

@@ -28,14 +28,20 @@ describe('Property 4: Large Transaction Alert Threshold', () => {
 
   function setupMock() {
     const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        upsert: vi.fn().mockImplementation((row: Record<string, unknown>) => {
-          createdNotifications.push({
-            type: row.type as string,
-            message: row.message as string,
-          });
-          return { error: null };
-        }),
+      from: vi.fn().mockImplementation(() => {
+        const selectChain: Record<string, unknown> = {};
+        selectChain.eq = vi.fn().mockReturnValue(selectChain);
+        selectChain.limit = vi.fn().mockReturnValue({ data: [], error: null });
+        return {
+          select: vi.fn().mockReturnValue(selectChain),
+          insert: vi.fn().mockImplementation((row: Record<string, unknown>) => {
+            createdNotifications.push({
+              type: row.type as string,
+              message: row.message as string,
+            });
+            return { error: null };
+          }),
+        };
       }),
     };
     (createClient as ReturnType<typeof vi.fn>).mockReturnValue(mockSupabase);

@@ -19,26 +19,50 @@ import { createNotificationIfNotExists } from '@/lib/notifications';
 import { createClient } from '@/lib/supabase/client';
 
 describe('Property 2: Notification Deduplication', () => {
-  let upsertCalls: Array<{ args: unknown[]; onConflict: string }>;
+  let insertedRows: Array<Record<string, unknown>>;
 
   beforeEach(() => {
-    upsertCalls = [];
+    insertedRows = [];
     vi.clearAllMocks();
   });
 
-  function setupMock() {
+  /**
+   * The actual createNotificationIfNotExists uses a select-then-insert pattern:
+   * 1. SELECT to check if dedup key exists
+   * 2. INSERT if not found
+   * We simulate the DB returning no existing row on first call, then returning
+   * the row on subsequent calls to verify deduplication.
+   */
+  function setupMock(existingKeys: Set<string>) {
+    const selectChain = (dedupKeyFilter?: string) => {
+      const chain: Record<string, unknown> = {};
+      let capturedDedupKey = dedupKeyFilter;
+      chain.eq = vi.fn().mockImplementation((_col: string, val: string) => {
+        // Capture the deduplication_key filter value
+        if (_col === 'deduplication_key') capturedDedupKey = val;
+        return chain;
+      });
+      chain.limit = vi.fn().mockImplementation(() => {
+        const exists = capturedDedupKey && existingKeys.has(capturedDedupKey);
+        return { data: exists ? [{ id: 'existing' }] : [], error: null };
+      });
+      return chain;
+    };
+
     const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        upsert: vi.fn().mockImplementation((row: unknown, opts: { onConflict: string }) => {
-          upsertCalls.push({ args: [row], onConflict: opts.onConflict });
+      from: vi.fn().mockImplementation(() => ({
+        select: vi.fn().mockImplementation(() => selectChain()),
+        insert: vi.fn().mockImplementation((row: Record<string, unknown>) => {
+          insertedRows.push(row);
+          existingKeys.add(row.deduplication_key as string);
           return { error: null };
         }),
-      }),
+      })),
     };
     (createClient as ReturnType<typeof vi.fn>).mockReturnValue(mockSupabase);
   }
 
-  it('should use upsert with deduplication_key conflict for every notification creation', async () => {
+  it('should deduplicate notifications by deduplication_key per user', async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.integer({ min: 1, max: 10 }), // number of duplicate attempts
@@ -46,28 +70,20 @@ describe('Property 2: Notification Deduplication', () => {
         fc.string({ minLength: 1, maxLength: 50 }),
         fc.string({ minLength: 1, maxLength: 100 }),
         async (attempts, type, dedupKey, message) => {
-          upsertCalls = [];
+          insertedRows = [];
           vi.clearAllMocks();
-          setupMock();
+          const existingKeys = new Set<string>();
+          setupMock(existingKeys);
 
           // Call createNotificationIfNotExists multiple times with the same dedup key
           for (let i = 0; i < attempts; i++) {
             await createNotificationIfNotExists('user-1', type, message, dedupKey);
           }
 
-          // Every call should use upsert with the correct onConflict clause
-          expect(upsertCalls.length).toBe(attempts);
-          for (const call of upsertCalls) {
-            expect(call.onConflict).toBe('user_id,deduplication_key');
-          }
-
-          // All calls use the same deduplication_key, so the DB would only store one
-          // The upsert mechanism ensures at most one notification per key
-          const dedupKeys = upsertCalls.map(
-            (c) => (c.args[0] as Record<string, unknown>).deduplication_key
-          );
-          // All dedup keys should be the same
-          expect(new Set(dedupKeys).size).toBe(1);
+          // Only the first call should insert; subsequent calls find existing and skip
+          expect(insertedRows.length).toBe(1);
+          expect(insertedRows[0].deduplication_key).toBe(dedupKey);
+          expect(insertedRows[0].type).toBe(type);
         }
       ),
       { numRuns: 100 }

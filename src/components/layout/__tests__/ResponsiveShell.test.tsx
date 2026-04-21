@@ -17,6 +17,10 @@ vi.mock('@/providers/AuthProvider', () => ({
   })),
 }));
 
+vi.mock('@/components/layout/NotificationBell', () => ({
+  default: () => <div data-testid="notification-bell" />,
+}));
+
 describe('ResponsiveShell', () => {
   it('renders children inside main element', () => {
     render(<ResponsiveShell><div data-testid="child">Content</div></ResponsiveShell>);

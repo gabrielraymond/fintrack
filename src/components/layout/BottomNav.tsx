@@ -8,6 +8,7 @@ const navItems = [
   { label: 'Transaksi', href: '/transactions', icon: TransactionIcon },
   { label: 'Akun', href: '/accounts', icon: AccountIcon },
   { label: 'Anggaran', href: '/budgets', icon: BudgetIcon },
+  { label: 'Goals', href: '/goals', icon: GoalIcon },
   { label: 'Laporan', href: '/reports', icon: ReportIcon },
   { label: 'Pengaturan', href: '/settings', icon: SettingsIcon },
 ];
@@ -45,6 +46,16 @@ function BudgetIcon({ className }: { className?: string }) {
       <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
       <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
       <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+    </svg>
+  );
+}
+
+function GoalIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
     </svg>
   );
 }

@@ -1,4 +1,4 @@
-import type { AccountType } from '@/types';
+import type { AccountType, GoalCategory } from '@/types';
 
 /**
  * Default Indonesian expense/income categories seeded for new users.
@@ -31,4 +31,19 @@ export const ACCOUNT_TYPES: ReadonlyArray<{
   { value: 'investment', label: 'Investasi' },
   { value: 'tabungan', label: 'Tabungan' },
   { value: 'dana_darurat', label: 'Dana Darurat' },
+] as const;
+
+/**
+ * Goal category definitions with Indonesian labels.
+ */
+export const GOAL_CATEGORIES: ReadonlyArray<{
+  value: GoalCategory;
+  label: string;
+}> = [
+  { value: 'tabungan', label: 'Tabungan' },
+  { value: 'dana_darurat', label: 'Dana Darurat' },
+  { value: 'liburan', label: 'Liburan' },
+  { value: 'pendidikan', label: 'Pendidikan' },
+  { value: 'pelunasan_hutang', label: 'Pelunasan Hutang' },
+  { value: 'lainnya', label: 'Lainnya' },
 ] as const;

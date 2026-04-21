@@ -12,6 +12,7 @@ import MonthlySummaryCard, { useCurrentMonthTransactions } from '@/components/da
 import CashFlowChart from '@/components/dashboard/CashFlowChart';
 import BudgetProgressSection from '@/components/dashboard/BudgetProgressSection';
 import SavingsProgressSection from '@/components/dashboard/SavingsProgressSection';
+import GoalsProgressSection from '@/components/dashboard/GoalsProgressSection';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
 import { useNetWorth } from '@/hooks/useNetWorth';
 import type { Account } from '@/types';
@@ -138,6 +139,9 @@ export default function DashboardPage() {
 
       {/* Savings Progress */}
       {!isLoading && <SavingsProgressSection accounts={accounts} />}
+
+      {/* Goals Progress */}
+      {!isLoading && <GoalsProgressSection />}
 
       {/* Recent Transactions */}
       {isLoading ? (
