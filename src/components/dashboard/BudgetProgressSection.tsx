@@ -3,7 +3,7 @@
 import React from 'react';
 import Card from '@/components/ui/Card';
 import BudgetProgressBar from '@/components/budgets/BudgetProgressBar';
-import { formatIDR } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { useBudgets } from '@/hooks/useBudgets';
 
 function getCurrentMonth(): string {
@@ -12,6 +12,7 @@ function getCurrentMonth(): string {
 }
 
 export default function BudgetProgressSection() {
+  const formatIDR = useFormatIDR();
   const month = getCurrentMonth();
   const { data: budgets, isLoading } = useBudgets(month);
 

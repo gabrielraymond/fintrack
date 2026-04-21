@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { formatIDR } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import type { Transaction } from '@/types';
 
 export interface CashFlowChartProps {
@@ -45,6 +45,7 @@ function buildDailyData(transactions: Transaction[]): DailyData[] {
 }
 
 export default function CashFlowChart({ transactions }: CashFlowChartProps) {
+  const formatIDR = useFormatIDR();
   const data = useMemo(() => buildDailyData(transactions), [transactions]);
 
   if (data.length === 0) {

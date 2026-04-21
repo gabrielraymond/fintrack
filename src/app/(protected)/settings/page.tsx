@@ -11,9 +11,10 @@ import { useToast } from '@/providers/ToastProvider';
 import { usePresets, useUpdatePreset, useDeletePreset } from '@/hooks/usePresets';
 import { useCategories, useUpdateCategory, useDeleteCategory } from '@/hooks/useCategories';
 import { useAccounts } from '@/hooks/useAccounts';
-import { formatIDR } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { exportTransactionsCSV } from '@/lib/csv-export';
 import { createClient } from '@/lib/supabase/client';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import type { TransactionPreset, Category, Transaction } from '@/types';
 
 // ── Profile Section ─────────────────────────────────────────
@@ -102,6 +103,7 @@ function ProfileSection() {
 // ── Preset Management Section ───────────────────────────────
 
 function PresetSection() {
+  const formatIDR = useFormatIDR();
   const { data: presets, isLoading } = usePresets();
   const updatePreset = useUpdatePreset();
   const deletePreset = useDeletePreset();
@@ -434,6 +436,113 @@ function DangerZoneSection() {
   );
 }
 
+// ── Theme Section ────────────────────────────────────────────
+
+function ThemeSection() {
+  return (
+    <Card title="Tema Tampilan">
+      <p className="text-body text-text-secondary mb-3">
+        Pilih tema tampilan yang Anda inginkan.
+      </p>
+      <ThemeToggle />
+    </Card>
+  );
+}
+
+// ── Notification Settings Section ────────────────────────────
+
+function NotificationSettingsSection() {
+  const { user } = useAuth();
+  const { showError, showSuccess } = useToast();
+  const [threshold, setThreshold] = useState('1000000');
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  React.useEffect(() => {
+    if (!user || loaded) return;
+    const supabase = createClient();
+    supabase
+      .from('user_profiles')
+      .select('large_transaction_threshold')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.large_transaction_threshold != null) {
+          setThreshold(String(data.large_transaction_threshold));
+        }
+        setLoaded(true);
+      });
+  }, [user, loaded]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    const value = parseInt(threshold, 10);
+    if (isNaN(value) || value <= 0) {
+      showError('Masukkan nilai threshold yang valid (angka positif).');
+      return;
+    }
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
+          large_transaction_threshold: value,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      showSuccess('Pengaturan notifikasi berhasil diperbarui.');
+    } catch {
+      showError('Gagal memperbarui pengaturan. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDisplay = (val: string) => {
+    const num = parseInt(val, 10);
+    if (isNaN(num)) return '';
+    return new Intl.NumberFormat('id-ID').format(num);
+  };
+
+  return (
+    <Card title="Pengaturan Notifikasi">
+      <div className="space-y-3">
+        <div>
+          <label htmlFor="large-tx-threshold" className="block text-caption text-text-secondary mb-1">
+            Threshold Transaksi Besar
+          </label>
+          <p className="text-small text-text-muted mb-2">
+            Anda akan menerima notifikasi ketika transaksi melebihi nilai ini.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-body text-text-secondary">Rp</span>
+            <input
+              id="large-tx-threshold"
+              type="number"
+              min="1"
+              value={threshold}
+              onChange={(e) => setThreshold(e.target.value)}
+              className="flex-1 px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="1000000"
+            />
+          </div>
+          {threshold && (
+            <p className="text-small text-text-muted mt-1">
+              Rp {formatDisplay(threshold)}
+            </p>
+          )}
+        </div>
+        <Button onClick={handleSave} loading={loading} size="sm">
+          Simpan Pengaturan
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 // ── Settings Page ───────────────────────────────────────────
 
 // ── Logout Section ───────────────────────────────────────────
@@ -462,6 +571,8 @@ export default function SettingsPage() {
       <h1 className="text-heading text-text-primary mb-6">Pengaturan</h1>
       <div className="space-y-6">
         <ProfileSection />
+        <ThemeSection />
+        <NotificationSettingsSection />
         <PresetSection />
         <CategorySection />
         <ExportSection />

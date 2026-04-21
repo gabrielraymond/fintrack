@@ -2,13 +2,14 @@
 
 import React from 'react';
 import Card from '@/components/ui/Card';
-import { formatIDR } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 
 export interface NetWorthCardProps {
   netWorth: number;
 }
 
 export default function NetWorthCard({ netWorth }: NetWorthCardProps) {
+  const formatIDR = useFormatIDR();
   const isNegative = netWorth < 0;
 
   return (

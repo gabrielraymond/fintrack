@@ -29,4 +29,6 @@ export const ACCOUNT_TYPES: ReadonlyArray<{
   { value: 'cash', label: 'Tunai' },
   { value: 'credit_card', label: 'Kartu Kredit' },
   { value: 'investment', label: 'Investasi' },
+  { value: 'tabungan', label: 'Tabungan' },
+  { value: 'dana_darurat', label: 'Dana Darurat' },
 ] as const;

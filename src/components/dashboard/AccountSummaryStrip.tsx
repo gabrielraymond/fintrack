@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { formatIDR } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import type { Account } from '@/types';
 
 const typeEmoji: Record<string, string> = {
@@ -17,6 +17,7 @@ export interface AccountSummaryStripProps {
 }
 
 export default function AccountSummaryStrip({ accounts }: AccountSummaryStripProps) {
+  const formatIDR = useFormatIDR();
   if (accounts.length === 0) return null;
 
   return (

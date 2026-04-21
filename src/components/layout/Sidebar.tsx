@@ -3,12 +3,15 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import ThemeToggle from '@/components/ui/ThemeToggle';
+import NotificationBell from '@/components/layout/NotificationBell';
 
 const navItems = [
   { label: 'Beranda', href: '/dashboard', icon: HomeIcon },
   { label: 'Transaksi', href: '/transactions', icon: TransactionIcon },
   { label: 'Akun', href: '/accounts', icon: AccountIcon },
   { label: 'Anggaran', href: '/budgets', icon: BudgetIcon },
+  { label: 'Laporan', href: '/reports', icon: ReportIcon },
   { label: 'Pengaturan', href: '/settings', icon: SettingsIcon },
 ];
 
@@ -49,6 +52,16 @@ function BudgetIcon({ className }: { className?: string }) {
   );
 }
 
+function ReportIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  );
+}
+
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -83,8 +96,9 @@ export default function Sidebar({ className }: { className?: string }) {
       className={`w-60 border-r border-border bg-surface flex-col h-screen sticky top-0 ${className ?? ''}`}
       aria-label="Navigasi utama"
     >
-      <div className="px-4 py-6">
+      <div className="px-4 py-6 flex items-center justify-between">
         <h1 className="text-heading text-primary font-bold">FinTrack</h1>
+        <NotificationBell />
       </div>
       <ul className="flex flex-col gap-1 px-2 flex-1">
         {navItems.map((item) => {
@@ -107,7 +121,8 @@ export default function Sidebar({ className }: { className?: string }) {
           );
         })}
       </ul>
-      <div className="px-2 pb-4">
+      <div className="px-2 pb-4 space-y-1">
+        <ThemeToggle compact />
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body text-danger hover:bg-danger/10 transition-colors w-full"

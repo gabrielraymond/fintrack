@@ -2,11 +2,13 @@
 // Enums / Union Types
 // ============================================================
 
-export type AccountType = 'bank' | 'e-wallet' | 'cash' | 'credit_card' | 'investment';
+export type AccountType = 'bank' | 'e-wallet' | 'cash' | 'credit_card' | 'investment' | 'tabungan' | 'dana_darurat';
 
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
 export type BudgetStatus = 'green' | 'yellow' | 'red';
+
+export type NotificationType = 'budget_alert' | 'cc_reminder' | 'large_transaction';
 
 // ============================================================
 // Database Entity Interfaces
@@ -20,6 +22,7 @@ export interface Account {
   balance: number;
   credit_limit: number | null;
   due_date: number | null;
+  target_amount: number | null;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -74,8 +77,20 @@ export interface UserProfile {
   id: string;
   display_name: string | null;
   onboarding_completed: boolean;
+  theme_preference: 'light' | 'dark' | 'system';
+  large_transaction_threshold: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  message: string;
+  is_read: boolean;
+  deduplication_key: string | null;
+  created_at: string;
 }
 
 // ============================================================
@@ -117,6 +132,7 @@ export interface AccountFormInput {
   balance: number;
   credit_limit?: number;
   due_date?: number;
+  target_amount?: number;
 }
 
 export interface TransactionFormInput {

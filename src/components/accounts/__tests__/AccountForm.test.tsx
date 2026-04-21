@@ -29,6 +29,7 @@ describe('AccountForm', () => {
       balance: 100000,
       credit_limit: null,
       due_date: null,
+      target_amount: null,
       is_deleted: false,
       created_at: '2024-01-01T00:00:00Z',
       updated_at: '2024-01-01T00:00:00Z',
@@ -99,5 +100,61 @@ describe('AccountForm', () => {
     );
     fireEvent.click(screen.getByText('Batal'));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('shows target_amount field when tabungan type is selected', () => {
+    render(
+      <AccountForm open={true} onClose={vi.fn()} onSubmit={vi.fn()} />,
+    );
+    fireEvent.change(screen.getByLabelText('Tipe Akun'), {
+      target: { value: 'tabungan' },
+    });
+    expect(screen.getByLabelText(/Target Tabungan/)).toBeInTheDocument();
+  });
+
+  it('shows target_amount field when dana_darurat type is selected', () => {
+    render(
+      <AccountForm open={true} onClose={vi.fn()} onSubmit={vi.fn()} />,
+    );
+    fireEvent.change(screen.getByLabelText('Tipe Akun'), {
+      target: { value: 'dana_darurat' },
+    });
+    expect(screen.getByLabelText(/Target Tabungan/)).toBeInTheDocument();
+  });
+
+  it('hides target_amount field for non-savings types', () => {
+    render(
+      <AccountForm open={true} onClose={vi.fn()} onSubmit={vi.fn()} />,
+    );
+    expect(screen.queryByLabelText(/Target Tabungan/)).not.toBeInTheDocument();
+  });
+
+  it('includes target_amount in onSubmit data for tabungan type', () => {
+    const onSubmit = vi.fn();
+    render(
+      <AccountForm open={true} onClose={vi.fn()} onSubmit={onSubmit} />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Nama Akun'), {
+      target: { value: 'Tabungan Liburan' },
+    });
+    fireEvent.change(screen.getByLabelText('Tipe Akun'), {
+      target: { value: 'tabungan' },
+    });
+    fireEvent.change(screen.getByLabelText(/Saldo Awal/), {
+      target: { value: '1000000' },
+    });
+    fireEvent.change(screen.getByLabelText(/Target Tabungan/), {
+      target: { value: '5000000' },
+    });
+
+    fireEvent.click(screen.getByText('Tambah'));
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: 'Tabungan Liburan',
+      type: 'tabungan',
+      balance: 1000000,
+      target_amount: 5000000,
+    });
   });
 });

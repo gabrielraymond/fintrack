@@ -59,6 +59,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase]);
 
   const signOut = useCallback(async () => {
+    try {
+      sessionStorage.removeItem('fintrack-privacy');
+    } catch {
+      // sessionStorage unavailable
+    }
     await supabase.auth.signOut();
   }, [supabase.auth]);
 

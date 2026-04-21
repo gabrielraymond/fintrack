@@ -112,6 +112,7 @@ export function useCreateAccount() {
           balance: input.balance,
           credit_limit: input.credit_limit ?? null,
           due_date: input.due_date ?? null,
+          target_amount: input.target_amount ?? null,
         })
         .select()
         .single();
@@ -134,6 +135,7 @@ export function useCreateAccount() {
         balance: input.balance,
         credit_limit: input.credit_limit ?? null,
         due_date: input.due_date ?? null,
+        target_amount: input.target_amount ?? null,
         is_deleted: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

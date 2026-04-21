@@ -4,7 +4,7 @@ import React from 'react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import BudgetProgressBar from './BudgetProgressBar';
-import { formatIDR } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import type { BudgetWithSpending } from '@/types';
 
 export interface BudgetCardProps {
@@ -14,6 +14,7 @@ export interface BudgetCardProps {
 }
 
 export default function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
+  const formatIDR = useFormatIDR();
   const remaining = budget.limit_amount - budget.spent;
   const categoryName = budget.category?.name ?? 'Kategori';
   const categoryIcon = budget.category?.icon ?? '📦';

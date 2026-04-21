@@ -13,59 +13,59 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
         surface: {
-          DEFAULT: "#FFFFFF",
-          secondary: "#F0F4F3",
-          elevated: "#FFFFFF",
+          DEFAULT: "var(--surface)",
+          secondary: "var(--surface-secondary)",
+          elevated: "var(--surface-elevated)",
         },
 
         // Primary brand color — emerald green
         primary: {
-          DEFAULT: "#059669",
-          light: "#34D399",
-          dark: "#047857",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--primary)",
+          light: "var(--primary-light)",
+          dark: "var(--primary-dark)",
+          foreground: "var(--primary-foreground)",
         },
 
         // Secondary accent — teal blue
         secondary: {
-          DEFAULT: "#0891B2",
-          light: "#22D3EE",
-          dark: "#0E7490",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--secondary)",
+          light: "var(--secondary-light)",
+          dark: "var(--secondary-dark)",
+          foreground: "var(--secondary-foreground)",
         },
 
         // Semantic colors
         success: {
-          DEFAULT: "#16A34A",
-          light: "#4ADE80",
-          dark: "#15803D",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--success)",
+          light: "var(--success-light)",
+          dark: "var(--success-dark)",
+          foreground: "var(--success-foreground)",
         },
         warning: {
-          DEFAULT: "#D97706",
-          light: "#FBBF24",
-          dark: "#B45309",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--warning)",
+          light: "var(--warning-light)",
+          dark: "var(--warning-dark)",
+          foreground: "var(--warning-foreground)",
         },
         danger: {
-          DEFAULT: "#DC2626",
-          light: "#F87171",
-          dark: "#B91C1C",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--danger)",
+          light: "var(--danger-light)",
+          dark: "var(--danger-dark)",
+          foreground: "var(--danger-foreground)",
         },
 
         // Text colors
         text: {
-          primary: "#1E293B",
-          secondary: "#475569",
-          muted: "#94A3B8",
-          inverse: "#FFFFFF",
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          inverse: "var(--text-inverse)",
         },
 
         // Border & divider
         border: {
-          DEFAULT: "#E2E8F0",
-          focus: "#059669",
+          DEFAULT: "var(--border)",
+          focus: "var(--border-focus)",
         },
       },
       fontFamily: {

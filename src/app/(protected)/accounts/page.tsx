@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Button from '@/components/ui/Button';
 import SkeletonLoader from '@/components/ui/SkeletonLoader';
 import EmptyState from '@/components/ui/EmptyState';
@@ -39,12 +39,22 @@ export default function AccountsPage() {
   const totalCount = data?.count ?? 0;
   const totalPages = Math.ceil(totalCount / 20);
 
+  const regularAccounts = useMemo(
+    () => accounts.filter((a) => a.type !== 'tabungan' && a.type !== 'dana_darurat'),
+    [accounts],
+  );
+  const savingsAccounts = useMemo(
+    () => accounts.filter((a) => a.type === 'tabungan' || a.type === 'dana_darurat'),
+    [accounts],
+  );
+
   const handleCreate = (formData: {
     name: string;
     type: AccountType;
     balance: number;
     credit_limit?: number;
     due_date?: number;
+    target_amount?: number;
   }) => {
     createAccount.mutate(formData, {
       onSuccess: () => setFormOpen(false),
@@ -57,6 +67,7 @@ export default function AccountsPage() {
     balance: number;
     credit_limit?: number;
     due_date?: number;
+    target_amount?: number;
   }) => {
     if (!editingAccount) return;
     updateAccount.mutate(
@@ -110,16 +121,40 @@ export default function AccountsPage() {
 
       {/* Account cards */}
       {!isLoading && !error && accounts.length > 0 && (
-        <div className="space-y-4">
-          {accounts.map((account) => (
-            <AccountCard
-              key={account.id}
-              account={account}
-              onEdit={(a) => setEditingAccount(a)}
-              onDelete={(a) => setDeleteTarget(a)}
-            />
-          ))}
-        </div>
+        <>
+          {/* Regular accounts */}
+          {regularAccounts.length > 0 && (
+            <div className="space-y-4">
+              {regularAccounts.map((account) => (
+                <AccountCard
+                  key={account.id}
+                  account={account}
+                  onEdit={(a) => setEditingAccount(a)}
+                  onDelete={(a) => setDeleteTarget(a)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Savings & Emergency Fund section */}
+          {savingsAccounts.length > 0 && (
+            <div className={regularAccounts.length > 0 ? 'mt-8' : ''}>
+              <h2 className="text-subheading text-text-primary mb-4">
+                Tabungan &amp; Dana Darurat
+              </h2>
+              <div className="space-y-4">
+                {savingsAccounts.map((account) => (
+                  <AccountCard
+                    key={account.id}
+                    account={account}
+                    onEdit={(a) => setEditingAccount(a)}
+                    onDelete={(a) => setDeleteTarget(a)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Pagination */}

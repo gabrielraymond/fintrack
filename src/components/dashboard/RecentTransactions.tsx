@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Card from '@/components/ui/Card';
-import { formatIDR, formatDate } from '@/lib/formatters';
+import { formatDate } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { useAuth } from '@/providers/AuthProvider';
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -43,6 +44,7 @@ function useRecentTransactions() {
 }
 
 export default function RecentTransactions() {
+  const formatIDR = useFormatIDR();
   const { data: transactions, isLoading } = useRecentTransactions();
 
   if (isLoading) return null;

@@ -15,6 +15,7 @@ export interface AccountFormProps {
     balance: number;
     credit_limit?: number;
     due_date?: number;
+    target_amount?: number;
   }) => void;
   loading?: boolean;
   /** Pass an account to edit; omit for create mode */
@@ -35,6 +36,7 @@ export default function AccountForm({
   const [balance, setBalance] = useState('');
   const [creditLimit, setCreditLimit] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [targetAmount, setTargetAmount] = useState('');
 
   useEffect(() => {
     if (account) {
@@ -43,16 +45,19 @@ export default function AccountForm({
       setBalance(String(account.balance));
       setCreditLimit(account.credit_limit !== null ? String(account.credit_limit) : '');
       setDueDate(account.due_date !== null ? String(account.due_date) : '');
+      setTargetAmount(account.target_amount !== null ? String(account.target_amount) : '');
     } else {
       setName('');
       setType('bank');
       setBalance('');
       setCreditLimit('');
       setDueDate('');
+      setTargetAmount('');
     }
   }, [account, open]);
 
   const isCreditCard = type === 'credit_card';
+  const isSavingsType = type === 'tabungan' || type === 'dana_darurat';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +69,9 @@ export default function AccountForm({
     if (isCreditCard) {
       if (creditLimit) data.credit_limit = Number(creditLimit);
       if (dueDate) data.due_date = Number(dueDate);
+    }
+    if (isSavingsType && targetAmount) {
+      data.target_amount = Number(targetAmount);
     }
     onSubmit(data);
   };
@@ -159,6 +167,24 @@ export default function AccountForm({
               />
             </div>
           </>
+        )}
+
+        {/* Savings / Emergency Fund target amount */}
+        {isSavingsType && (
+          <div>
+            <label htmlFor="target-amount" className="block text-caption text-text-secondary mb-1">
+              Target Tabungan (IDR)
+            </label>
+            <input
+              id="target-amount"
+              type="number"
+              min={1}
+              value={targetAmount}
+              onChange={(e) => setTargetAmount(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="0"
+            />
+          </div>
         )}
 
         {/* Actions */}

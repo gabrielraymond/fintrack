@@ -78,6 +78,7 @@ const makeAccount = (overrides: Partial<Account> = {}): Account => ({
   balance: 5000000,
   credit_limit: null,
   due_date: null,
+  target_amount: null,
   is_deleted: false,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',

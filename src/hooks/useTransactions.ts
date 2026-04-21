@@ -9,6 +9,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import type { Transaction, TransactionFormInput } from '@/types';
 import { accountKeys } from './useAccounts';
+import { notificationKeys } from './useNotifications';
+import { evaluateBudgetThresholds, evaluateLargeTransaction } from '@/lib/notifications';
 
 // ── Query Keys ──────────────────────────────────────────────
 export const transactionKeys = {
@@ -58,10 +60,48 @@ export function useCreateTransaction() {
       });
     },
 
-    onSuccess: () => {
+    onSuccess: (_data, input) => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       queryClient.invalidateQueries({ queryKey: accountKeys.all });
       queryClient.invalidateQueries({ queryKey: budgetKeys.all });
+
+      // Evaluate notifications (non-blocking)
+      if (user) {
+        const evaluateNotifications = async () => {
+          try {
+            const supabase = createClient();
+
+            // Evaluate budget thresholds for expense transactions
+            if (input.type === 'expense' && input.category_id) {
+              const txMonth = input.date.substring(0, 7) + '-01';
+              await evaluateBudgetThresholds(user.id, input.category_id, txMonth);
+            }
+
+            // Evaluate large transaction alert
+            const { data: account } = await supabase
+              .from('accounts')
+              .select('name')
+              .eq('id', input.account_id)
+              .single();
+
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('large_transaction_threshold')
+              .eq('id', user.id)
+              .single();
+
+            const threshold = profile?.large_transaction_threshold ?? 1_000_000;
+            const accountName = account?.name ?? 'Akun';
+
+            await evaluateLargeTransaction(user.id, input.amount, input.type, accountName, threshold);
+
+            queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+          } catch {
+            // Non-blocking: notification evaluation failure shouldn't affect transaction flow
+          }
+        };
+        evaluateNotifications();
+      }
     },
   });
 
@@ -105,10 +145,48 @@ export function useUpdateTransaction() {
       });
     },
 
-    onSuccess: () => {
+    onSuccess: (_data, input) => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       queryClient.invalidateQueries({ queryKey: accountKeys.all });
       queryClient.invalidateQueries({ queryKey: budgetKeys.all });
+
+      // Evaluate notifications (non-blocking)
+      if (user) {
+        const evaluateNotifications = async () => {
+          try {
+            const supabase = createClient();
+
+            // Evaluate budget thresholds for expense transactions
+            if (input.type === 'expense' && input.category_id) {
+              const txMonth = input.date.substring(0, 7) + '-01';
+              await evaluateBudgetThresholds(user.id, input.category_id, txMonth);
+            }
+
+            // Evaluate large transaction alert
+            const { data: account } = await supabase
+              .from('accounts')
+              .select('name')
+              .eq('id', input.account_id)
+              .single();
+
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('large_transaction_threshold')
+              .eq('id', user.id)
+              .single();
+
+            const threshold = profile?.large_transaction_threshold ?? 1_000_000;
+            const accountName = account?.name ?? 'Akun';
+
+            await evaluateLargeTransaction(user.id, input.amount, input.type, accountName, threshold);
+
+            queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+          } catch {
+            // Non-blocking: notification evaluation failure shouldn't affect transaction flow
+          }
+        };
+        evaluateNotifications();
+      }
     },
   });
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Card from '@/components/ui/Card';
-import { formatIDR } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { useAuth } from '@/providers/AuthProvider';
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -60,6 +60,7 @@ function useCurrentMonthTransactions() {
 export { useCurrentMonthTransactions };
 
 export default function MonthlySummaryCard() {
+  const formatIDR = useFormatIDR();
   const { data: transactions, isLoading } = useCurrentMonthTransactions();
   const summary = calculateMonthlySummary(transactions ?? []);
 

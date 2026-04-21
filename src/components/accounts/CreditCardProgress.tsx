@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { formatIDR } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 
 export interface CreditCardProgressProps {
   balance: number;
@@ -40,6 +40,7 @@ export default function CreditCardProgress({
   creditLimit,
   dueDate,
 }: CreditCardProgressProps) {
+  const formatIDR = useFormatIDR();
   const debt = Math.abs(balance);
   const ratio = creditLimit > 0 ? Math.min(debt / creditLimit, 1) : 0;
   const percentage = Math.round(ratio * 100);

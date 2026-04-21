@@ -3,14 +3,89 @@
 @tailwind utilities;
 
 :root {
-  --background: #F0F4F3;
-  --foreground: #1A1A1A;
+  /* Light mode — warm greens inspired by palette #EBD5AB / #8BAE66 */
+  --background: #F5F2EB;
+  --foreground: #1B211A;
+  --surface: #FFFFFF;
+  --surface-secondary: #EDE9E0;
+  --surface-elevated: #FFFFFF;
+  --text-primary: #1B211A;
+  --text-secondary: #4A5240;
+  --text-muted: #8A9180;
+  --text-inverse: #FFFFFF;
+  --border: #D5D0C4;
+  --border-focus: #628141;
+  --primary: #628141;
+  --primary-light: #8BAE66;
+  --primary-dark: #4A6830;
+  --primary-foreground: #FFFFFF;
+  --secondary: #48A6A7;
+  --secondary-light: #6DBFBF;
+  --secondary-dark: #357E7F;
+  --secondary-foreground: #FFFFFF;
+  --success: #628141;
+  --success-light: #8BAE66;
+  --success-dark: #4A6830;
+  --success-foreground: #FFFFFF;
+  --warning: #C4922A;
+  --warning-light: #EBD5AB;
+  --warning-dark: #9A7320;
+  --warning-foreground: #1B211A;
+  --danger: #C0392B;
+  --danger-light: #E57373;
+  --danger-dark: #962D22;
+  --danger-foreground: #FFFFFF;
+}
+
+html.dark {
+  /* Dark mode — warm olive dark, inspired by #EBD5AB warmth */
+  --background: #1E1E1A;
+  --foreground: #E0DCD2;
+  --surface: #2A2A24;
+  --surface-secondary: #33332C;
+  --surface-elevated: #33332C;
+  --text-primary: #E0DCD2;
+  --text-secondary: #B0AC9F;
+  --text-muted: #7D7A6E;
+  --text-inverse: #1E1E1A;
+  --border: #3E3E35;
+  --border-focus: #A8C88A;
+  --primary: #A8C88A;
+  --primary-light: #BDD9A0;
+  --primary-dark: #8BAE66;
+  --primary-foreground: #1E1E1A;
+  --secondary: #7ECACA;
+  --secondary-light: #9ADADB;
+  --secondary-dark: #5AB5B5;
+  --secondary-foreground: #1E1E1A;
+  --success: #A8C88A;
+  --success-light: #BDD9A0;
+  --success-dark: #8BAE66;
+  --success-foreground: #1E1E1A;
+  --warning: #EBD5AB;
+  --warning-light: #F2E4C8;
+  --warning-dark: #C4922A;
+  --warning-foreground: #1E1E1A;
+  --danger: #E8807A;
+  --danger-light: #F0A09B;
+  --danger-dark: #C0392B;
+  --danger-foreground: #FFFFFF;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Ensure all form inputs respect theme colors */
+input, textarea, select {
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
 }
 
 @layer utilities {

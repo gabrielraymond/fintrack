@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { formatIDR, formatDate } from '@/lib/formatters';
+import { formatDate } from '@/lib/formatters';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import type { TransactionWithRelations } from '@/hooks/useInfiniteScroll';
 
 interface TransactionListProps {
@@ -78,6 +79,7 @@ export default function TransactionList({
   onEdit,
   onDelete,
 }: TransactionListProps) {
+  const formatIDR = useFormatIDR();
   const groups = groupByDate(transactions);
 
   return (

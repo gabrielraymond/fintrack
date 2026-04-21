@@ -4,7 +4,8 @@ import React from 'react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import CreditCardProgress from './CreditCardProgress';
-import { formatIDR } from '@/lib/formatters';
+import SavingsProgressBar from './SavingsProgressBar';
+import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { ACCOUNT_TYPES } from '@/lib/constants';
 import type { Account } from '@/types';
 
@@ -15,6 +16,7 @@ export interface AccountCardProps {
 }
 
 export default function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
+  const formatIDR = useFormatIDR();
   const typeLabel =
     ACCOUNT_TYPES.find((t) => t.value === account.type)?.label ?? account.type;
 
@@ -61,6 +63,14 @@ export default function AccountCard({ account, onEdit, onDelete }: AccountCardPr
           dueDate={account.due_date}
         />
       )}
+
+      {(account.type === 'tabungan' || account.type === 'dana_darurat') &&
+        account.target_amount !== null && (
+          <SavingsProgressBar
+            balance={account.balance}
+            targetAmount={account.target_amount}
+          />
+        )}
     </Card>
   );
 }

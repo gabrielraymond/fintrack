@@ -4,11 +4,16 @@ import Sidebar from '../Sidebar';
 
 vi.mock('next/navigation', () => ({
   usePathname: vi.fn(() => '/dashboard'),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+}));
+
+vi.mock('@/providers/AuthProvider', () => ({
+  useAuth: vi.fn(() => ({ signOut: vi.fn() })),
 }));
 
 import { usePathname } from 'next/navigation';
 
-const navLabels = ['Beranda', 'Transaksi', 'Akun', 'Anggaran', 'Pengaturan'];
+const navLabels = ['Beranda', 'Transaksi', 'Akun', 'Anggaran', 'Laporan', 'Pengaturan'];
 
 describe('Sidebar', () => {
   it('renders a nav element with proper aria-label', () => {
@@ -21,7 +26,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('FinTrack')).toBeInTheDocument();
   });
 
-  it('renders all five navigation items in Bahasa Indonesia', () => {
+  it('renders all six navigation items in Bahasa Indonesia', () => {
     render(<Sidebar />);
     for (const label of navLabels) {
       expect(screen.getByText(label)).toBeInTheDocument();
@@ -51,7 +56,7 @@ describe('Sidebar', () => {
 
   it('renders correct hrefs for all nav items', () => {
     render(<Sidebar />);
-    const expectedHrefs = ['/dashboard', '/transactions', '/accounts', '/budgets', '/settings'];
+    const expectedHrefs = ['/dashboard', '/transactions', '/accounts', '/budgets', '/reports', '/settings'];
     const links = screen.getAllByRole('link');
     expect(links.map((l) => l.getAttribute('href'))).toEqual(expectedHrefs);
   });

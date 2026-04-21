@@ -11,6 +11,7 @@ import AccountSummaryStrip from '@/components/dashboard/AccountSummaryStrip';
 import MonthlySummaryCard, { useCurrentMonthTransactions } from '@/components/dashboard/MonthlySummaryCard';
 import CashFlowChart from '@/components/dashboard/CashFlowChart';
 import BudgetProgressSection from '@/components/dashboard/BudgetProgressSection';
+import SavingsProgressSection from '@/components/dashboard/SavingsProgressSection';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
 import { useNetWorth } from '@/hooks/useNetWorth';
 import type { Account } from '@/types';
@@ -134,6 +135,9 @@ export default function DashboardPage() {
       ) : (
         <BudgetProgressSection />
       )}
+
+      {/* Savings Progress */}
+      {!isLoading && <SavingsProgressSection accounts={accounts} />}
 
       {/* Recent Transactions */}
       {isLoading ? (

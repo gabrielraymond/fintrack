@@ -4,6 +4,17 @@ import ResponsiveShell from '../ResponsiveShell';
 
 vi.mock('next/navigation', () => ({
   usePathname: vi.fn(() => '/dashboard'),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+}));
+
+vi.mock('@/providers/AuthProvider', () => ({
+  useAuth: vi.fn(() => ({
+    user: null,
+    loading: false,
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+  })),
 }));
 
 describe('ResponsiveShell', () => {

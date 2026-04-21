@@ -6,8 +6,8 @@ Implementasi halaman laporan bulanan/tahunan untuk FinTrack menggunakan Next.js 
 
 ## Tasks
 
-- [ ] 1. Setup pure utility functions (`report-utils.ts`)
-  - [ ] 1.1 Create `src/lib/report-utils.ts` with all pure aggregation functions
+- [x] 1. Setup pure utility functions (`report-utils.ts`)
+  - [x] 1.1 Create `src/lib/report-utils.ts` with all pure aggregation functions
     - Implement `calculateReportSummary`, `calculateCategoryExpenses`, `calculateMonthlyTrend`, `calculatePercentageChange`, `calculateMonthOverMonth`, `calculateYearlySummary`
     - Implement `formatIDRShort`, `getShortMonthName`, `getFullMonthName`, `getCategoryColors`
     - Implement `canNavigateNext`, `getPreviousMonth`, `getNextMonth`, `getComparisonIndicator`
@@ -57,37 +57,37 @@ Implementasi halaman laporan bulanan/tahunan untuk FinTrack menggunakan Next.js 
     - **Property 11: IDR Short Format**
     - **Validates: Requirements 5.4**
 
-- [ ] 2. Checkpoint - Ensure all utility tests pass
+- [x] 2. Checkpoint - Ensure all utility tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 3. Implement data fetching hook (`useReports`)
-  - [ ] 3.1 Create `src/hooks/useReports.ts`
+- [x] 3. Implement data fetching hook (`useReports`)
+  - [x] 3.1 Create `src/hooks/useReports.ts`
     - Implement Tanstack Query hook fetching transactions with categories and accounts join
     - Filter out soft-deleted accounts in query
     - Support monthly and yearly view modes
     - Use `report-utils.ts` functions for all aggregations
     - _Requirements: 10.1, 11.1, 11.2_
 
-- [ ] 4. Implement UI components
-  - [ ] 4.1 Create `src/components/reports/PeriodSelector.tsx`
+- [x] 4. Implement UI components
+  - [x] 4.1 Create `src/components/reports/PeriodSelector.tsx`
     - Month/year navigation with prev/next buttons
     - Display Indonesian month name + year
     - Disable next button when at current month
     - ARIA labels and keyboard navigation support
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 12.1, 12.2_
 
-  - [ ] 4.2 Create `src/components/reports/ViewToggle.tsx`
+  - [x] 4.2 Create `src/components/reports/ViewToggle.tsx`
     - Tab toggle between "Bulanan" and "Tahunan"
     - Default to "Bulanan"
     - ARIA labels and keyboard support
     - _Requirements: 9.1, 9.4, 12.1, 12.2_
 
-  - [ ] 4.3 Create `src/components/reports/ReportSummaryCard.tsx`
+  - [x] 4.3 Create `src/components/reports/ReportSummaryCard.tsx`
     - Display total income, expenses, and net change in IDR format
     - Green color for positive net, red for negative
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-  - [ ] 4.4 Create `src/components/reports/ExpensePieChart.tsx`
+  - [x] 4.4 Create `src/components/reports/ExpensePieChart.tsx`
     - Recharts PieChart with ResponsiveContainer
     - Color-coded segments with percentage labels
     - Tooltip with category name + IDR amount
@@ -95,12 +95,12 @@ Implementasi halaman laporan bulanan/tahunan untuk FinTrack menggunakan Next.js 
     - Empty state message when no expense data
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.6, 12.3, 13.3_
 
-  - [ ] 4.5 Create `src/components/reports/CategoryBreakdown.tsx`
+  - [x] 4.5 Create `src/components/reports/CategoryBreakdown.tsx`
     - Sorted list of categories with icon, name, IDR amount, percentage, colored progress bar
     - Colors matching pie chart segments
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-  - [ ] 4.6 Create `src/components/reports/IncomeExpenseTrendChart.tsx`
+  - [x] 4.6 Create `src/components/reports/IncomeExpenseTrendChart.tsx`
     - Recharts BarChart with ResponsiveContainer
     - Green bars for income, red for expenses
     - Indonesian short month labels on X-axis
@@ -108,32 +108,32 @@ Implementasi halaman laporan bulanan/tahunan untuk FinTrack menggunakan Next.js 
     - Tooltip with month, income, and expense in IDR
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 13.3_
 
-  - [ ] 4.7 Create `src/components/reports/MonthOverMonthComparison.tsx`
+  - [x] 4.7 Create `src/components/reports/MonthOverMonthComparison.tsx`
     - Comparison cards for income, expenses, net change
     - Percentage change with colored arrow indicators
     - Inverted color logic for expenses
     - Display "-" when previous month has no data
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7_
 
-  - [ ] 4.8 Create `src/components/reports/YearlySummaryView.tsx`
+  - [x] 4.8 Create `src/components/reports/YearlySummaryView.tsx`
     - Annual totals: income, expenses, net change
     - Monthly averages
     - 12-month bar chart with Indonesian month labels
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
 
-  - [ ] 4.9 Create `src/components/reports/ReportSkeletonLoader.tsx`
+  - [x] 4.9 Create `src/components/reports/ReportSkeletonLoader.tsx`
     - Skeleton matching expected layout for loading state
     - _Requirements: 10.1_
 
-- [ ] 5. Assemble Reports page and navigation
-  - [ ] 5.1 Create `src/app/(protected)/reports/page.tsx`
+- [x] 5. Assemble Reports page and navigation
+  - [x] 5.1 Create `src/app/(protected)/reports/page.tsx`
     - Wire PeriodSelector, ViewToggle, and all report components
     - Conditional rendering based on monthly/yearly view
     - Loading skeleton, empty state, and error state handling
     - Responsive layout: single column < 768px, side-by-side pie chart + breakdown ≥ 768px
     - _Requirements: 9.2, 9.3, 10.1, 10.2, 10.3, 13.1, 13.2_
 
-  - [ ] 5.2 Add "Laporan" navigation item to Sidebar and BottomNav
+  - [x] 5.2 Add "Laporan" navigation item to Sidebar and BottomNav
     - Add nav item with chart icon pointing to `/reports`
     - _Requirements: 1.1, 1.2, 1.3_
 
@@ -144,7 +144,7 @@ Implementasi halaman laporan bulanan/tahunan untuk FinTrack menggunakan Next.js 
     - Test accessibility: ARIA labels, keyboard navigation, screen reader table
     - _Requirements: 9.2, 9.3, 9.4, 10.1, 10.2, 10.3, 12.1, 12.2, 12.3_
 
-- [ ] 6. Final checkpoint - Ensure all tests pass
+- [x] 6. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
