@@ -35,7 +35,7 @@ export default function AccountsPage() {
   // Soft-deleted toggle
   const [showDeleted, setShowDeleted] = useState(false);
 
-  const accounts = data?.data ?? [];
+  const accounts = useMemo(() => data?.data ?? [], [data?.data]);
   const totalCount = data?.count ?? 0;
   const totalPages = Math.ceil(totalCount / 20);
 

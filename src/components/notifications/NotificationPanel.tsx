@@ -36,7 +36,6 @@ function getRelativeTime(dateStr: string): string {
 
 export default function NotificationPanel({
   open,
-  onClose: _onClose,
   notifications,
   onMarkRead,
   onMarkAllRead,

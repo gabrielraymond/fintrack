@@ -269,7 +269,7 @@ export function calculateCategoryExpenses(
   let colorIndex = 0;
 
   const result: CategoryExpense[] = [];
-  for (const [categoryId, amount] of expenseMap) {
+  for (const [categoryId, amount] of Array.from(expenseMap.entries())) {
     const category = categoryMap.get(categoryId);
     result.push({
       categoryId,

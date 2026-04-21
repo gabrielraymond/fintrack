@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import type { PieLabelRenderProps } from 'recharts';
 import Card from '@/components/ui/Card';
 import { useFormatIDR } from '@/hooks/useFormatIDR';
 import type { CategoryExpense } from '@/lib/report-utils';
@@ -23,6 +24,7 @@ interface CustomLabelProps {
   midAngle: number;
   innerRadius: number;
   outerRadius: number;
+  percent: number;
   percentage: number;
 }
 
@@ -32,9 +34,11 @@ function renderPercentageLabel({
   midAngle,
   innerRadius,
   outerRadius,
+  percent,
   percentage,
 }: CustomLabelProps) {
-  if (percentage < 5) return null;
+  const pct = percentage ?? Math.round(percent * 100);
+  if (pct < 5) return null;
   const RADIAN = Math.PI / 180;
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -50,7 +54,7 @@ function renderPercentageLabel({
       fontSize={12}
       fontWeight={600}
     >
-      {`${percentage}%`}
+      {`${pct}%`}
     </text>
   );
 }
@@ -105,7 +109,18 @@ export default function ExpensePieChart({ data, totalExpenses }: ExpensePieChart
               cx="50%"
               cy="50%"
               outerRadius={100}
-              label={renderPercentageLabel}
+              label={(props: PieLabelRenderProps) => {
+                const p = props as PieLabelRenderProps & { percentage?: number };
+                return renderPercentageLabel({
+                  cx: Number(p.cx),
+                  cy: Number(p.cy),
+                  midAngle: Number(p.midAngle),
+                  innerRadius: Number(p.innerRadius),
+                  outerRadius: Number(p.outerRadius),
+                  percent: Number(p.percent),
+                  percentage: p.percentage ?? Math.round(Number(p.percent) * 100),
+                });
+              }}
               labelLine={false}
             >
               {data.map((entry) => (

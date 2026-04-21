@@ -7,7 +7,7 @@
  * Feature: fintrack-enhancements, Property 10: Privacy Mode Masking
  * Validates: Requirements 13.1
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
 
 // We test the pure logic: when privacyMode is true, the formatter returns masked value

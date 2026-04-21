@@ -199,7 +199,7 @@ export function useReports({ month, year, view }: UseReportsParams): UseReportsR
 
   // Strip joined category data back to plain Transaction for util functions
   const toTransactions = (data: TransactionWithCategory[] | undefined): Transaction[] =>
-    (data ?? []).map(({ categories: _cat, ...rest }) => rest as unknown as Transaction);
+    (data ?? []).map(({ categories: _cat, ...rest }) => rest as unknown as Transaction); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const summary = useMemo<ReportSummary | null>(() => {
     if (view !== 'monthly' || !monthlyQuery.data) return null;
