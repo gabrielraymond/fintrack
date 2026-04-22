@@ -5,7 +5,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { useGoalDetail, useGoalContributions } from '@/hooks/useGoals';
 import { useFormatIDR } from '@/hooks/useFormatIDR';
-import type { FinancialGoal, GoalContribution, GoalCategory } from '@/types';
+import type { FinancialGoal, GoalContribution, GoalContributionWithAccount, GoalCategory } from '@/types';
 
 const CATEGORY_ICONS: Record<GoalCategory, string> = {
   tabungan: '💰',
@@ -230,21 +230,30 @@ export default function GoalDetailView({
           <p className="text-body text-text-secondary">Belum ada kontribusi.</p>
         ) : (
           <ul className="space-y-3" role="list">
-            {contributions.map((c) => (
-              <li key={c.id} className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
-                <div>
-                  <p className={`text-body font-medium ${c.amount > 0 ? 'text-success' : 'text-danger'}`}>
-                    {c.amount > 0 ? '+' : ''}{formatIDR(Math.abs(c.amount))}
-                  </p>
-                  {c.note && (
-                    <p className="text-caption text-text-secondary">{c.note}</p>
-                  )}
-                </div>
-                <span className="text-caption text-text-secondary shrink-0 ml-2">
-                  {formatDate(c.created_at)}
-                </span>
-              </li>
-            ))}
+            {contributions.map((c) => {
+              const contrib = c as GoalContributionWithAccount;
+              return (
+                <li key={c.id} className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
+                  <div>
+                    <p className={`text-body font-medium ${c.amount > 0 ? 'text-success' : 'text-danger'}`}>
+                      {c.amount > 0 ? '+' : ''}{formatIDR(Math.abs(c.amount))}
+                    </p>
+                    {contrib.account && (
+                      <p className="text-caption text-text-secondary">
+                        {contrib.account.name}
+                        {contrib.account.is_deleted && ' (tidak aktif)'}
+                      </p>
+                    )}
+                    {c.note && (
+                      <p className="text-caption text-text-secondary">{c.note}</p>
+                    )}
+                  </div>
+                  <span className="text-caption text-text-secondary shrink-0 ml-2">
+                    {formatDate(c.created_at)}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </Card>

@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
-import type { FinancialGoal, GoalContribution, GoalFormInput, GoalStatus } from '@/types';
+import type { FinancialGoal, GoalContribution, GoalContributionWithAccount, GoalFormInput, GoalStatus, Account } from '@/types';
+import { accountKeys } from '@/hooks/useAccounts';
 
 // ── Query Keys ──────────────────────────────────────────────
 export const goalKeys = {
@@ -58,17 +59,17 @@ async function fetchGoalDetail(goalId: string): Promise<FinancialGoal> {
 
 async function fetchGoalContributions(
   goalId: string
-): Promise<GoalContribution[]> {
+): Promise<GoalContributionWithAccount[]> {
   const supabase = createClient();
 
   const { data, error } = await supabase
     .from('goal_contributions')
-    .select('*')
+    .select('*, account:account_id(id, name, is_deleted)')
     .eq('goal_id', goalId)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return (data as GoalContribution[]) ?? [];
+  return (data as GoalContributionWithAccount[]) ?? [];
 }
 
 async function fetchDashboardGoals(
@@ -133,7 +134,7 @@ export function useGoalDetail(goalId: string) {
 export function useGoalContributions(goalId: string) {
   const { user } = useAuth();
 
-  return useQuery({
+  return useQuery<GoalContributionWithAccount[]>({
     queryKey: goalKeys.contributions(goalId),
     queryFn: () => fetchGoalContributions(goalId),
     enabled: !!user && !!goalId,
@@ -446,13 +447,14 @@ export function useAddContribution() {
   const { showError } = useToast();
 
   const mutation = useMutation({
-    mutationFn: async (input: { goalId: string; amount: number; note?: string }) => {
+    mutationFn: async (input: { goalId: string; amount: number; note?: string; accountId: string }) => {
       const supabase = createClient();
       const { data, error } = await supabase.rpc('add_goal_contribution', {
         p_user_id: user!.id,
         p_goal_id: input.goalId,
         p_amount: input.amount,
         p_note: input.note ?? null,
+        p_account_id: input.accountId,
       });
 
       if (error) throw error;
@@ -461,6 +463,7 @@ export function useAddContribution() {
 
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: goalKeys.all });
+      await queryClient.cancelQueries({ queryKey: accountKeys.all });
 
       // Optimistically update the goal's current_amount in the list cache
       const listKey = goalKeys.list(user!.id);
@@ -505,6 +508,7 @@ export function useAddContribution() {
         user_id: user!.id,
         amount: input.amount,
         note: input.note ?? null,
+        account_id: input.accountId,
         created_at: new Date().toISOString(),
       };
 
@@ -512,7 +516,22 @@ export function useAddContribution() {
         queryClient.setQueryData(contribKey, [optimisticContrib, ...previousContribs]);
       }
 
-      return { previousList, listKey, previousDetail, detailKey, previousContribs, contribKey };
+      // Optimistically decrease account balance
+      const accountsKey = accountKeys.active(user!.id, 0);
+      const previousAccounts = queryClient.getQueryData<{ data: Account[]; count: number }>(accountsKey);
+
+      if (previousAccounts) {
+        queryClient.setQueryData(accountsKey, {
+          ...previousAccounts,
+          data: previousAccounts.data.map((a) =>
+            a.id === input.accountId
+              ? { ...a, balance: a.balance - input.amount, updated_at: new Date().toISOString() }
+              : a
+          ),
+        });
+      }
+
+      return { previousList, listKey, previousDetail, detailKey, previousContribs, contribKey, previousAccounts, accountsKey };
     },
 
     onError: (_err, input, context) => {
@@ -525,6 +544,9 @@ export function useAddContribution() {
       if (context?.previousContribs) {
         queryClient.setQueryData(context.contribKey, context.previousContribs);
       }
+      if (context?.previousAccounts) {
+        queryClient.setQueryData(context.accountsKey, context.previousAccounts);
+      }
       showError('Gagal menambah kontribusi. Silakan coba lagi.', () => {
         mutation.mutate(input);
       });
@@ -533,6 +555,7 @@ export function useAddContribution() {
     onSettled: (_data, _err, input) => {
       queryClient.invalidateQueries({ queryKey: goalKeys.all });
       queryClient.invalidateQueries({ queryKey: goalKeys.contributions(input.goalId) });
+      queryClient.invalidateQueries({ queryKey: accountKeys.all });
     },
   });
 
@@ -549,13 +572,14 @@ export function useWithdrawContribution() {
   const { showError } = useToast();
 
   const mutation = useMutation({
-    mutationFn: async (input: { goalId: string; amount: number; note?: string }) => {
+    mutationFn: async (input: { goalId: string; amount: number; note?: string; accountId: string }) => {
       const supabase = createClient();
       const { data, error } = await supabase.rpc('withdraw_goal_contribution', {
         p_user_id: user!.id,
         p_goal_id: input.goalId,
         p_amount: input.amount,
         p_note: input.note ?? null,
+        p_account_id: input.accountId,
       });
 
       if (error) throw error;
@@ -564,6 +588,7 @@ export function useWithdrawContribution() {
 
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: goalKeys.all });
+      await queryClient.cancelQueries({ queryKey: accountKeys.all });
 
       // Optimistically update the goal's current_amount in the list cache
       const listKey = goalKeys.list(user!.id);
@@ -608,6 +633,7 @@ export function useWithdrawContribution() {
         user_id: user!.id,
         amount: -input.amount,
         note: input.note ?? null,
+        account_id: input.accountId,
         created_at: new Date().toISOString(),
       };
 
@@ -615,7 +641,22 @@ export function useWithdrawContribution() {
         queryClient.setQueryData(contribKey, [optimisticContrib, ...previousContribs]);
       }
 
-      return { previousList, listKey, previousDetail, detailKey, previousContribs, contribKey };
+      // Optimistically increase account balance
+      const accountsKey = accountKeys.active(user!.id, 0);
+      const previousAccounts = queryClient.getQueryData<{ data: Account[]; count: number }>(accountsKey);
+
+      if (previousAccounts) {
+        queryClient.setQueryData(accountsKey, {
+          ...previousAccounts,
+          data: previousAccounts.data.map((a) =>
+            a.id === input.accountId
+              ? { ...a, balance: a.balance + input.amount, updated_at: new Date().toISOString() }
+              : a
+          ),
+        });
+      }
+
+      return { previousList, listKey, previousDetail, detailKey, previousContribs, contribKey, previousAccounts, accountsKey };
     },
 
     onError: (_err, input, context) => {
@@ -628,6 +669,9 @@ export function useWithdrawContribution() {
       if (context?.previousContribs) {
         queryClient.setQueryData(context.contribKey, context.previousContribs);
       }
+      if (context?.previousAccounts) {
+        queryClient.setQueryData(context.accountsKey, context.previousAccounts);
+      }
       showError('Gagal menarik dana. Silakan coba lagi.', () => {
         mutation.mutate(input);
       });
@@ -636,6 +680,7 @@ export function useWithdrawContribution() {
     onSettled: (_data, _err, input) => {
       queryClient.invalidateQueries({ queryKey: goalKeys.all });
       queryClient.invalidateQueries({ queryKey: goalKeys.contributions(input.goalId) });
+      queryClient.invalidateQueries({ queryKey: accountKeys.all });
     },
   });
 

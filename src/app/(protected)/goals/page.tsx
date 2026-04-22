@@ -19,6 +19,7 @@ import {
   useAddContribution,
   useWithdrawContribution,
 } from '@/hooks/useGoals';
+import { useAccounts } from '@/hooks/useAccounts';
 import type { FinancialGoal, GoalFormInput, GoalStatus, ContributionFormInput } from '@/types';
 
 const STATUS_TABS: { label: string; value: GoalStatus }[] = [
@@ -30,6 +31,8 @@ const STATUS_TABS: { label: string; value: GoalStatus }[] = [
 export default function GoalsPage() {
   const [statusFilter, setStatusFilter] = useState<GoalStatus>('active');
   const { data: goals, isLoading, error, refetch } = useGoals(statusFilter);
+  const { data: accountsData } = useAccounts();
+  const accounts = accountsData?.data ?? [];
 
   const createGoal = useCreateGoal();
   const updateGoal = useUpdateGoal();
@@ -92,7 +95,7 @@ export default function GoalsPage() {
   const handleAddContribution = (data: ContributionFormInput) => {
     if (!contributionGoal) return;
     addContribution.mutate(
-      { goalId: contributionGoal.id, amount: data.amount, note: data.note },
+      { goalId: contributionGoal.id, amount: data.amount, note: data.note, accountId: data.account_id },
       { onSuccess: () => setContributionGoal(null) },
     );
   };
@@ -100,7 +103,7 @@ export default function GoalsPage() {
   const handleWithdrawContribution = (data: ContributionFormInput) => {
     if (!contributionGoal) return;
     withdrawContribution.mutate(
-      { goalId: contributionGoal.id, amount: data.amount, note: data.note },
+      { goalId: contributionGoal.id, amount: data.amount, note: data.note, accountId: data.account_id },
       { onSuccess: () => setContributionGoal(null) },
     );
   };
@@ -228,6 +231,7 @@ export default function GoalsPage() {
         mode={contributionMode}
         currentAmount={contributionGoal?.current_amount ?? 0}
         loading={contributionMode === 'add' ? addContribution.isPending : withdrawContribution.isPending}
+        accounts={accounts}
       />
 
       {/* Delete confirmation */}

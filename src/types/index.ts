@@ -85,7 +85,16 @@ export interface GoalContribution {
   user_id: string;
   amount: number; // positif = kontribusi, negatif = penarikan
   note: string | null;
+  account_id: string | null;
   created_at: string;
+}
+
+export interface GoalContributionWithAccount extends GoalContribution {
+  account?: {
+    id: string;
+    name: string;
+    is_deleted: boolean;
+  } | null;
 }
 
 export interface TransactionPreset {
@@ -207,6 +216,7 @@ export interface GoalFormInput {
 export interface ContributionFormInput {
   amount: number;
   note?: string;
+  account_id: string;
 }
 
 // ============================================================
