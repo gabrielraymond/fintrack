@@ -69,7 +69,7 @@ async function fetchTransactions(
 
   const { data, error } = await supabase
     .from('transactions')
-    .select('*, categories(id, name, icon), accounts!inner(id)')
+    .select('*, categories(id, name, icon), accounts!transactions_account_id_fkey!inner(id, is_deleted)')
     .eq('user_id', userId)
     .gte('date', dateStart)
     .lt('date', dateEnd)
