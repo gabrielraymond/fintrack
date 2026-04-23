@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import SkeletonLoader from '@/components/ui/SkeletonLoader';
 import ErrorState from '@/components/ui/ErrorState';
 import FAB from '@/components/ui/FAB';
@@ -15,6 +15,7 @@ import SavingsProgressSection from '@/components/dashboard/SavingsProgressSectio
 import GoalsProgressSection from '@/components/dashboard/GoalsProgressSection';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
 import { useNetWorth } from '@/hooks/useNetWorth';
+import { partitionAccounts } from '@/lib/accountClassifier';
 import type { Account } from '@/types';
 
 function CreditCardDueWarnings({ accounts }: { accounts: Account[] }) {
@@ -67,8 +68,10 @@ function CreditCardDueWarnings({ accounts }: { accounts: Account[] }) {
 
 export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false);
-  const { netWorth, accounts, isLoading: accountsLoading, error: accountsError, refetch: refetchAccounts } = useNetWorth();
+  const { breakdown, accounts, isLoading: accountsLoading, error: accountsError, refetch: refetchAccounts } = useNetWorth();
   const { data: monthlyTransactions, isLoading: txLoading, error: txError, refetch: refetchTx } = useCurrentMonthTransactions();
+
+  const { operational, savings } = useMemo(() => partitionAccounts(accounts), [accounts]);
 
   const isLoading = accountsLoading || txLoading;
   const hasError = accountsError || txError;
@@ -102,10 +105,10 @@ export default function DashboardPage() {
       {isLoading ? (
         <SkeletonLoader height="5rem" shape="rect" />
       ) : (
-        <NetWorthCard netWorth={netWorth} />
+        <NetWorthCard total={breakdown.total} operational={breakdown.operational} savings={breakdown.savings} />
       )}
 
-      {/* Account Summary Strip */}
+      {/* Account Summary Strips */}
       {isLoading ? (
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -113,7 +116,10 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : (
-        <AccountSummaryStrip accounts={accounts} />
+        <>
+          <AccountSummaryStrip accounts={operational} label="Akun Operasional" />
+          <AccountSummaryStrip accounts={savings} label="Simpanan & Investasi" />
+        </>
       )}
 
       {/* Monthly Summary */}

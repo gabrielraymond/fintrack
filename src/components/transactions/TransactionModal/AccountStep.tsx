@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAccounts } from '@/hooks/useAccounts';
 import { formatIDR } from '@/lib/formatters';
+import { classifyAccountType } from '@/lib/accountClassifier';
 
 interface AccountStepProps {
   isTransfer: boolean;
@@ -23,6 +24,13 @@ export default function AccountStep({
   const [accountId, setAccountId] = useState<string | null>(selectedAccountId);
   const [destinationId, setDestinationId] = useState<string | null>(selectedDestinationId);
   const [error, setError] = useState<string | null>(null);
+
+  const displayedAccounts = useMemo(() => {
+    if (isTransfer) return accounts;
+    return accounts.filter(
+      (a) => classifyAccountType(a.type) === 'operational'
+    );
+  }, [accounts, isTransfer]);
 
   const handleConfirm = () => {
     if (!accountId) {
@@ -59,6 +67,14 @@ export default function AccountStep({
     );
   }
 
+  if (!isTransfer && displayedAccounts.length === 0) {
+    return (
+      <p className="text-body text-text-secondary text-center py-8">
+        Tidak ada akun operasional. Buat akun bank, e-wallet, tunai, atau kartu kredit terlebih dahulu.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Source account */}
@@ -67,7 +83,7 @@ export default function AccountStep({
           {isTransfer ? 'Akun sumber' : 'Pilih akun'}
         </p>
         <div className="space-y-2" role="radiogroup" aria-label={isTransfer ? 'Akun sumber' : 'Pilih akun'}>
-          {accounts.map((acc) => (
+          {displayedAccounts.map((acc) => (
             <button
               key={acc.id}
               type="button"

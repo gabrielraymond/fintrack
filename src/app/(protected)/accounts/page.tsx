@@ -15,6 +15,7 @@ import {
   useUpdateAccount,
   useSoftDeleteAccount,
 } from '@/hooks/useAccounts';
+import { partitionAccounts } from '@/lib/accountClassifier';
 import type { Account, AccountType } from '@/types';
 
 export default function AccountsPage() {
@@ -39,12 +40,8 @@ export default function AccountsPage() {
   const totalCount = data?.count ?? 0;
   const totalPages = Math.ceil(totalCount / 20);
 
-  const regularAccounts = useMemo(
-    () => accounts.filter((a) => a.type !== 'tabungan' && a.type !== 'dana_darurat'),
-    [accounts],
-  );
-  const savingsAccounts = useMemo(
-    () => accounts.filter((a) => a.type === 'tabungan' || a.type === 'dana_darurat'),
+  const { operational: regularAccounts, savings: savingsAccounts } = useMemo(
+    () => partitionAccounts(accounts),
     [accounts],
   );
 
@@ -140,7 +137,7 @@ export default function AccountsPage() {
           {savingsAccounts.length > 0 && (
             <div className={regularAccounts.length > 0 ? 'mt-8' : ''}>
               <h2 className="text-subheading text-text-primary mb-4">
-                Tabungan &amp; Dana Darurat
+                Tabungan, Investasi &amp; Dana Darurat
               </h2>
               <div className="space-y-4">
                 {savingsAccounts.map((account) => (

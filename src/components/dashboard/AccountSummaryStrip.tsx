@@ -14,18 +14,23 @@ const typeEmoji: Record<string, string> = {
 
 export interface AccountSummaryStripProps {
   accounts: Account[];
+  label?: string;  // label bagian opsional, ditampilkan di atas strip
 }
 
-export default function AccountSummaryStrip({ accounts }: AccountSummaryStripProps) {
+export default function AccountSummaryStrip({ accounts, label }: AccountSummaryStripProps) {
   const formatIDR = useFormatIDR();
   if (accounts.length === 0) return null;
 
   return (
-    <div
-      className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
-      role="list"
-      aria-label="Ringkasan akun"
-    >
+    <section>
+      {label && (
+        <h3 className="text-body font-semibold text-text-primary mb-2">{label}</h3>
+      )}
+      <div
+        className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+        role="list"
+        aria-label={label ?? 'Ringkasan akun'}
+      >
       {accounts.map((account) => (
         <div
           key={account.id}
@@ -45,6 +50,7 @@ export default function AccountSummaryStrip({ accounts }: AccountSummaryStripPro
           </p>
         </div>
       ))}
-    </div>
+      </div>
+    </section>
   );
 }
