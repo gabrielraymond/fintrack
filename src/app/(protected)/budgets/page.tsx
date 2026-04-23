@@ -48,7 +48,7 @@ export default function BudgetsPage() {
   const handleEdit = (data: { category_id: string; month: string; limit_amount: number }) => {
     if (!editingBudget) return;
     updateBudget.mutate(
-      { id: editingBudget.id, limit_amount: data.limit_amount },
+      { id: editingBudget.id, limit_amount: data.limit_amount, month: data.month },
       { onSuccess: () => setEditingBudget(null) },
     );
   };

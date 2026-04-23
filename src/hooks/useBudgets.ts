@@ -168,8 +168,8 @@ export function useCreateBudget() {
 }
 
 /**
- * Updates an existing budget limit amount.
- * Requirements: 9.1
+ * Updates an existing budget limit amount and optionally the month.
+ * Requirements: 2.2, 2.3, 2.5, 9.1
  */
 export function useUpdateBudget() {
   const queryClient = useQueryClient();
@@ -180,25 +180,46 @@ export function useUpdateBudget() {
     mutationFn: async ({
       id,
       limit_amount,
+      month,
     }: {
       id: string;
       limit_amount: number;
+      month?: string;
     }) => {
       const supabase = createClient();
+      const updateFields: Record<string, unknown> = {
+        limit_amount,
+        updated_at: new Date().toISOString(),
+      };
+      if (month) {
+        updateFields.month = month;
+      }
+
       const { data, error } = await supabase
         .from('budgets')
-        .update({ limit_amount, updated_at: new Date().toISOString() })
+        .update(updateFields)
         .eq('id', id)
         .eq('user_id', user!.id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error(
+            'Anggaran untuk kategori dan bulan ini sudah ada.'
+          );
+        }
+        throw error;
+      }
       return data as Budget;
     },
 
     onError: (_err, variables) => {
-      showError('Gagal memperbarui anggaran. Silakan coba lagi.', () => {
+      const message =
+        _err instanceof Error
+          ? _err.message
+          : 'Gagal memperbarui anggaran. Silakan coba lagi.';
+      showError(message, () => {
         mutation.mutate(variables);
       });
     },
@@ -210,6 +231,8 @@ export function useUpdateBudget() {
 
   return mutation;
 }
+
+
 
 /**
  * Deletes a budget.

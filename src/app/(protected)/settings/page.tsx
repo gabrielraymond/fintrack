@@ -9,7 +9,8 @@ import SkeletonLoader from '@/components/ui/SkeletonLoader';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import { usePresets, useUpdatePreset, useDeletePreset } from '@/hooks/usePresets';
-import { useCategories, useUpdateCategory, useDeleteCategory } from '@/hooks/useCategories';
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/useCategories';
+import CategoryForm from '@/components/categories/CategoryForm';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { exportTransactionsCSV } from '@/lib/csv-export';
@@ -216,8 +217,10 @@ function PresetSection() {
 
 function CategorySection() {
   const { data: categories, isLoading } = useCategories();
+  const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
+  const [formOpen, setFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editName, setEditName] = useState('');
   const [editIcon, setEditIcon] = useState('');
@@ -260,6 +263,11 @@ function CategorySection() {
   return (
     <>
       <Card title="Kategori">
+        <div className="mb-4">
+          <Button variant="primary" size="sm" onClick={() => setFormOpen(true)}>
+            Tambah Kategori
+          </Button>
+        </div>
         {!categories || categories.length === 0 ? (
           <p className="text-body text-text-muted">Belum ada kategori.</p>
         ) : (
@@ -326,6 +334,17 @@ function CategorySection() {
         confirmLabel="Hapus"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <CategoryForm
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSubmit={(data) => {
+          createCategory.mutate(data, {
+            onSuccess: () => setFormOpen(false),
+          });
+        }}
+        loading={createCategory.isPending}
       />
     </>
   );

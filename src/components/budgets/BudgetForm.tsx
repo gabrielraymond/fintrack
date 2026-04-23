@@ -113,8 +113,7 @@ export default function BudgetForm({
             type="month"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            disabled={isEdit}
-            className="w-full px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary bg-surface disabled:opacity-50"
+            className="w-full px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
           />
         </div>
 
