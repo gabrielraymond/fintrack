@@ -19,7 +19,7 @@ export default function AccountStep({
   onConfirm,
 }: AccountStepProps) {
   const { data, isLoading } = useAccounts(0);
-  const accounts = data?.data ?? [];
+  const accounts = useMemo(() => data?.data ?? [], [data?.data]);
 
   const [accountId, setAccountId] = useState<string | null>(selectedAccountId);
   const [destinationId, setDestinationId] = useState<string | null>(selectedDestinationId);
