@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
@@ -562,6 +563,87 @@ function NotificationSettingsSection() {
   );
 }
 
+// ── Cutoff Date Section ──────────────────────────────────────
+
+function CutoffDateSection() {
+  const { user } = useAuth();
+  const { showError, showSuccess } = useToast();
+  const [cutoffDate, setCutoffDate] = useState('1');
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const queryClient = useQueryClient();
+
+  React.useEffect(() => {
+    if (!user || loaded) return;
+    const supabase = createClient();
+    supabase
+      .from('user_profiles')
+      .select('cutoff_date')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.cutoff_date != null) {
+          setCutoffDate(String(data.cutoff_date));
+        }
+        setLoaded(true);
+      });
+  }, [user, loaded]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
+          cutoff_date: parseInt(cutoffDate, 10),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['user-profile', 'cutoff-date'] });
+      showSuccess('Tanggal cutoff berhasil diperbarui.');
+    } catch {
+      showError('Gagal memperbarui tanggal cutoff. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card title="Tanggal Cutoff / Gajian">
+      <div className="space-y-3">
+        <p className="text-small text-text-muted">
+          Tentukan tanggal mulai siklus anggaran bulanan Anda. Misalnya, jika gajian tanggal 25,
+          maka siklus anggaran Anda adalah tanggal 25 bulan ini sampai tanggal 24 bulan depan.
+        </p>
+        <div>
+          <label htmlFor="cutoff-date" className="block text-caption text-text-secondary mb-1">
+            Tanggal Cutoff
+          </label>
+          <select
+            id="cutoff-date"
+            value={cutoffDate}
+            onChange={(e) => setCutoffDate(e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg text-body text-text-primary bg-surface focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
+              <option key={d} value={d}>
+                {d === 1 ? 'Tanggal 1 (default — bulan kalender)' : `Tanggal ${d}`}
+              </option>
+            ))}
+          </select>
+        </div>
+        <Button onClick={handleSave} loading={loading} size="sm">
+          Simpan
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 // ── Settings Page ───────────────────────────────────────────
 
 // ── Logout Section ───────────────────────────────────────────
@@ -586,12 +668,13 @@ function LogoutSection() {
 
 export default function SettingsPage() {
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className="p-4 max-w-5xl mx-auto">
       <h1 className="text-heading text-text-primary mb-6">Pengaturan</h1>
       <div className="space-y-6">
         <ProfileSection />
         <ThemeSection />
         <NotificationSettingsSection />
+        <CutoffDateSection />
         <PresetSection />
         <CategorySection />
         <ExportSection />

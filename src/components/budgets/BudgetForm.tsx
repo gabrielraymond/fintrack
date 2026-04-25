@@ -5,6 +5,7 @@ import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import { useCategories } from '@/hooks/useCategories';
 import type { BudgetWithSpending } from '@/types';
+import { getCycleRange, getCycleBudgetMonth } from '@/lib/cycle-utils';
 
 export interface BudgetFormProps {
   open: boolean;
@@ -15,13 +16,14 @@ export interface BudgetFormProps {
   budget?: BudgetWithSpending | null;
   /** Category IDs that already have a budget for the selected month */
   budgetedCategoryIds?: string[];
+  /** Cutoff date (1-28) for cycle-aware default month. Defaults to 1. */
+  cutoffDate?: number;
 }
 
-function getCurrentMonth(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  return `${y}-${m}`;
+function getDefaultMonth(cutoffDate: number = 1): string {
+  const cycleRange = getCycleRange(cutoffDate);
+  const budgetMonth = getCycleBudgetMonth(cycleRange); // "YYYY-MM-01"
+  return budgetMonth.slice(0, 7); // "YYYY-MM"
 }
 
 function monthInputToDate(monthInput: string): string {
@@ -35,12 +37,13 @@ export default function BudgetForm({
   loading = false,
   budget,
   budgetedCategoryIds = [],
+  cutoffDate = 1,
 }: BudgetFormProps) {
   const isEdit = !!budget;
   const { data: categories } = useCategories();
 
   const [categoryId, setCategoryId] = useState('');
-  const [month, setMonth] = useState(getCurrentMonth());
+  const [month, setMonth] = useState(getDefaultMonth(cutoffDate));
   const [limitAmount, setLimitAmount] = useState('');
 
   useEffect(() => {
@@ -51,10 +54,10 @@ export default function BudgetForm({
       setLimitAmount(String(budget.limit_amount));
     } else {
       setCategoryId('');
-      setMonth(getCurrentMonth());
+      setMonth(getDefaultMonth(cutoffDate));
       setLimitAmount('');
     }
-  }, [budget, open]);
+  }, [budget, open, cutoffDate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

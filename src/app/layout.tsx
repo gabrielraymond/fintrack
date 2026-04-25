@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthProvider";
@@ -18,9 +18,39 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
 export const metadata: Metadata = {
   title: "FinTrack - Keuangan Pribadi",
   description: "Aplikasi keuangan pribadi untuk pengguna Indonesia",
+  manifest: '/manifest.json',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#628141' },
+    { media: '(prefers-color-scheme: dark)', color: '#1E1E1A' },
+  ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'FinTrack',
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
 };
 
 // Inline script to prevent flash of wrong theme before hydration

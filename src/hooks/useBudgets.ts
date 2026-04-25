@@ -9,12 +9,13 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/providers/AuthProvider';
 import { useToast } from '@/providers/ToastProvider';
 import type { Budget, BudgetFormInput, BudgetWithSpending, Category } from '@/types';
+import { getCycleRangeForMonth } from '@/lib/cycle-utils';
 
 // ── Query Keys ──────────────────────────────────────────────
 export const budgetKeys = {
   all: ['budgets'] as const,
-  list: (userId: string, month: string) =>
-    [...budgetKeys.all, 'list', userId, month] as const,
+  list: (userId: string, month: string, cutoffDate: number = 1) =>
+    [...budgetKeys.all, 'list', userId, month, cutoffDate] as const,
 };
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -30,7 +31,8 @@ function getBudgetStatus(spent: number, limit: number): 'green' | 'yellow' | 're
 
 async function fetchBudgetsWithSpending(
   userId: string,
-  month: string
+  month: string,
+  cutoffDate: number
 ): Promise<BudgetWithSpending[]> {
   const supabase = createClient();
 
@@ -45,11 +47,8 @@ async function fetchBudgetsWithSpending(
   if (budgetError) throw budgetError;
   if (!budgets || budgets.length === 0) return [];
 
-  // Calculate the month range for expense query
-  const monthStart = month; // e.g. "2024-03-01"
-  const monthDate = new Date(month);
-  const nextMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1);
-  const monthEnd = nextMonth.toISOString().split('T')[0];
+  // Calculate the cycle range for expense query
+  const { start: monthStart, end: monthEnd } = getCycleRangeForMonth(month, cutoffDate);
 
   // Fetch all expense transactions for this month
   const { data: expenses, error: expenseError } = await supabase
@@ -94,12 +93,12 @@ async function fetchBudgetsWithSpending(
  * Fetches budgets with spending for a given month.
  * Requirements: 9.1, 9.3, 9.4
  */
-export function useBudgets(month: string) {
+export function useBudgets(month: string, cutoffDate: number = 1) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: budgetKeys.list(user?.id ?? '', month),
-    queryFn: () => fetchBudgetsWithSpending(user!.id, month),
+    queryKey: budgetKeys.list(user?.id ?? '', month, cutoffDate),
+    queryFn: () => fetchBudgetsWithSpending(user!.id, month, cutoffDate),
     enabled: !!user && !!month,
   });
 }
@@ -109,8 +108,8 @@ export function useBudgets(month: string) {
  * Used to disable already-budgeted categories in the form.
  * Requirements: 27.1, 27.2
  */
-export function useBudgetedCategoryIds(month: string) {
-  const { data: budgets } = useBudgets(month);
+export function useBudgetedCategoryIds(month: string, cutoffDate: number = 1) {
+  const { data: budgets } = useBudgets(month, cutoffDate);
   return (budgets ?? []).map((b) => b.category_id);
 }
 

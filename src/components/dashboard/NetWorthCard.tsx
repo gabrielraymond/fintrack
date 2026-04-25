@@ -26,19 +26,19 @@ export default function NetWorthCard({ total, operational, savings }: NetWorthCa
 
       {/* Secondary: Operational & Savings side by side */}
       <div className="flex gap-4 mt-3">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <p className="text-caption text-text-secondary mb-0.5">Saldo Operasional</p>
           <p
-            className={`text-body font-semibold ${operational < 0 ? 'text-danger' : 'text-text-primary'}`}
+            className={`text-body font-semibold truncate ${operational < 0 ? 'text-danger' : 'text-text-primary'}`}
             aria-label={`Saldo operasional ${formatIDR(operational)}`}
           >
             {formatIDR(operational)}
           </p>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <p className="text-caption text-text-secondary mb-0.5">Simpanan &amp; Investasi</p>
           <p
-            className={`text-body font-semibold ${savings < 0 ? 'text-danger' : 'text-text-primary'}`}
+            className={`text-body font-semibold truncate ${savings < 0 ? 'text-danger' : 'text-text-primary'}`}
             aria-label={`Simpanan dan investasi ${formatIDR(savings)}`}
           >
             {formatIDR(savings)}

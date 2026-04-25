@@ -68,7 +68,15 @@ export default function AccountsPage() {
   }) => {
     if (!editingAccount) return;
     updateAccount.mutate(
-      { id: editingAccount.id, name: formData.name, type: formData.type },
+      {
+        id: editingAccount.id,
+        name: formData.name,
+        type: formData.type,
+        balance: formData.balance,
+        credit_limit: formData.credit_limit ?? null,
+        due_date: formData.due_date ?? null,
+        target_amount: formData.target_amount ?? null,
+      },
       { onSuccess: () => setEditingAccount(null) },
     );
   };
@@ -81,7 +89,7 @@ export default function AccountsPage() {
   };
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className="p-4 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-heading text-text-primary">Akun</h1>
         <Button variant="primary" onClick={() => setFormOpen(true)}>

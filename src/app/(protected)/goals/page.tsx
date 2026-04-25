@@ -117,7 +117,7 @@ export default function GoalsPage() {
   const selectedGoal = goals?.find((g) => g.id === selectedGoalId) ?? null;
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className="p-4 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-heading text-text-primary">Tujuan Keuangan</h1>
         <Button variant="primary" onClick={() => setFormOpen(true)}>

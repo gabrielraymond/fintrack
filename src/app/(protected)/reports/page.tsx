@@ -14,6 +14,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import { useReports } from '@/hooks/useReports';
 import type { ReportView } from '@/hooks/useReports';
+import { useCutoffDate } from '@/hooks/useCutoffDate';
 import {
   canNavigateNext,
   getPreviousMonth,
@@ -25,6 +26,7 @@ export default function ReportsPage() {
   const [month, setMonth] = useState(now.getMonth());
   const [year, setYear] = useState(now.getFullYear());
   const [view, setView] = useState<ReportView>('monthly');
+  const { cutoffDate } = useCutoffDate();
 
   const {
     summary,
@@ -35,7 +37,7 @@ export default function ReportsPage() {
     isLoading,
     error,
     refetch,
-  } = useReports({ month, year, view });
+  } = useReports({ month, year, view, cutoffDate });
 
   const handlePrevious = () => {
     const prev = getPreviousMonth(month, year);
@@ -63,7 +65,7 @@ export default function ReportsPage() {
   const isEmpty = isEmptyMonthly || isEmptyYearly;
 
   return (
-    <div className="p-4 max-w-3xl mx-auto space-y-4">
+    <div className="p-4 max-w-5xl mx-auto space-y-4">
       <h1 className="text-heading text-text-primary">Laporan</h1>
 
       <ViewToggle activeView={view} onViewChange={handleViewChange} />

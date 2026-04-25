@@ -5,23 +5,31 @@ import Card from '@/components/ui/Card';
 import BudgetProgressBar from '@/components/budgets/BudgetProgressBar';
 import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { useBudgets } from '@/hooks/useBudgets';
-
-function getCurrentMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-}
+import { useCutoffDate } from '@/hooks/useCutoffDate';
+import { getCycleRange, getCycleBudgetMonth } from '@/lib/cycle-utils';
 
 export default function BudgetProgressSection() {
   const formatIDR = useFormatIDR();
-  const month = getCurrentMonth();
-  const { data: budgets, isLoading } = useBudgets(month);
+  const { cutoffDate } = useCutoffDate();
+  const cycleRange = getCycleRange(cutoffDate);
+  const budgetMonth = getCycleBudgetMonth(cycleRange);
+  const { data: budgets, isLoading } = useBudgets(budgetMonth, cutoffDate);
 
   if (isLoading) return null;
   if (!budgets || budgets.length === 0) return null;
 
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const formatDay = (s: string) => { const [, m, d] = s.split('-'); return `${parseInt(d, 10)} ${months[parseInt(m, 10) - 1]}`; };
+  const endDate = new Date(cycleRange.end);
+  endDate.setDate(endDate.getDate() - 1);
+  const displayEnd = endDate.toISOString().split('T')[0];
+  const budgetLabel = cutoffDate === 1
+    ? 'Anggaran Bulan Ini'
+    : `Anggaran ${formatDay(cycleRange.start)} – ${formatDay(displayEnd)}`;
+
   return (
     <Card>
-      <p className="text-caption text-text-secondary mb-3">Anggaran Bulan Ini</p>
+      <p className="text-caption text-text-secondary mb-3">{budgetLabel}</p>
       <div className="space-y-3">
         {budgets.map((budget) => {
           const categoryName = budget.category?.name ?? 'Kategori';

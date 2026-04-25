@@ -78,7 +78,7 @@ export default function DashboardPage() {
 
   if (hasError && !isLoading) {
     return (
-      <div className="p-4 max-w-3xl mx-auto">
+      <div className="p-4 max-w-5xl mx-auto">
         <h1 className="text-heading text-text-primary mb-4">Dashboard</h1>
         <ErrorState
           message="Gagal memuat data dashboard. Silakan coba lagi."
@@ -92,7 +92,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-4 max-w-3xl mx-auto space-y-4">
+    <div className="p-4 max-w-5xl mx-auto space-y-4">
       <h1 className="text-heading text-text-primary">Dashboard</h1>
 
       {/* Credit card due date warnings */}

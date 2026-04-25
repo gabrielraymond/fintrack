@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/providers/AuthProvider';
 import type { Transaction, Category } from '@/types';
+import { getCycleRangeForMonth } from '@/lib/cycle-utils';
 import {
   calculateReportSummary,
   calculateCategoryExpenses,
@@ -27,6 +28,7 @@ export interface UseReportsParams {
   month: number; // 0-11
   year: number;
   view: ReportView;
+  cutoffDate?: number; // 1-28, default 1
 }
 
 export interface UseReportsResult {
@@ -44,8 +46,8 @@ export interface UseReportsResult {
 
 export const reportKeys = {
   all: ['reports'] as const,
-  monthly: (userId: string, month: number, year: number) =>
-    [...reportKeys.all, 'monthly', userId, month, year] as const,
+  monthly: (userId: string, month: number, year: number, cutoffDate: number) =>
+    [...reportKeys.all, 'monthly', userId, month, year, cutoffDate] as const,
   yearly: (userId: string, year: number) =>
     [...reportKeys.all, 'yearly', userId, year] as const,
 };
@@ -97,15 +99,12 @@ async function fetchCategories(userId: string): Promise<Category[]> {
 
 // ── Date Helpers ────────────────────────────────────────────
 
-function getMonthDateRange(month: number, year: number) {
-  const start = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-  const nextMonth = month === 11 ? 0 : month + 1;
-  const nextYear = month === 11 ? year + 1 : year;
-  const end = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-01`;
-  return { start, end };
+function getMonthDateRange(month: number, year: number, cutoffDate: number) {
+  const budgetMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
+  return getCycleRangeForMonth(budgetMonth, cutoffDate);
 }
 
-function getTrendDateRange(month: number, year: number, months: number) {
+function getTrendDateRange(month: number, year: number, months: number, cutoffDate: number) {
   // Go back (months - 1) months from the selected month
   let m = month;
   let y = year;
@@ -114,13 +113,17 @@ function getTrendDateRange(month: number, year: number, months: number) {
     m = prev.month;
     y = prev.year;
   }
-  const start = `${y}-${String(m + 1).padStart(2, '0')}-01`;
-
-  // End is the first day of the month after the selected month
-  const nextMonth = month === 11 ? 0 : month + 1;
-  const nextYear = month === 11 ? year + 1 : year;
-  const end = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-01`;
-  return { start, end };
+  // Start is the cycle start of the earliest month
+  const earliestRange = getCycleRangeForMonth(
+    `${y}-${String(m + 1).padStart(2, '0')}`,
+    cutoffDate,
+  );
+  // End is the cycle end of the selected month
+  const latestRange = getCycleRangeForMonth(
+    `${year}-${String(month + 1).padStart(2, '0')}`,
+    cutoffDate,
+  );
+  return { start: earliestRange.start, end: latestRange.end };
 }
 
 function getYearDateRange(year: number) {
@@ -138,22 +141,22 @@ function getYearDateRange(year: number) {
  * Yearly view: full calendar year transactions.
  * Requirements: 10.1, 11.1, 11.2
  */
-export function useReports({ month, year, view }: UseReportsParams): UseReportsResult {
+export function useReports({ month, year, view, cutoffDate = 1 }: UseReportsParams): UseReportsResult {
   const { user } = useAuth();
   const userId = user?.id ?? '';
 
   // ── Monthly queries ─────────────────────────────────────
-  const monthRange = useMemo(() => getMonthDateRange(month, year), [month, year]);
-  const trendRange = useMemo(() => getTrendDateRange(month, year, 6), [month, year]);
+  const monthRange = useMemo(() => getMonthDateRange(month, year, cutoffDate), [month, year, cutoffDate]);
+  const trendRange = useMemo(() => getTrendDateRange(month, year, 6, cutoffDate), [month, year, cutoffDate]);
   const prevMonth = useMemo(() => getPreviousMonth(month, year), [month, year]);
   const prevMonthRange = useMemo(
-    () => getMonthDateRange(prevMonth.month, prevMonth.year),
-    [prevMonth],
+    () => getMonthDateRange(prevMonth.month, prevMonth.year, cutoffDate),
+    [prevMonth, cutoffDate],
   );
 
   // Current month transactions
   const monthlyQuery = useQuery({
-    queryKey: reportKeys.monthly(userId, month, year),
+    queryKey: reportKeys.monthly(userId, month, year, cutoffDate),
     queryFn: () => fetchTransactions(userId, monthRange.start, monthRange.end),
     enabled: !!user && view === 'monthly',
     retry: 1,
@@ -161,7 +164,7 @@ export function useReports({ month, year, view }: UseReportsParams): UseReportsR
 
   // 6-month trend transactions
   const trendQuery = useQuery({
-    queryKey: [...reportKeys.all, 'trend', userId, month, year],
+    queryKey: [...reportKeys.all, 'trend', userId, month, year, cutoffDate],
     queryFn: () => fetchTransactions(userId, trendRange.start, trendRange.end),
     enabled: !!user && view === 'monthly',
     retry: 1,
@@ -169,7 +172,7 @@ export function useReports({ month, year, view }: UseReportsParams): UseReportsR
 
   // Previous month transactions (for MoM comparison)
   const prevMonthQuery = useQuery({
-    queryKey: reportKeys.monthly(userId, prevMonth.month, prevMonth.year),
+    queryKey: reportKeys.monthly(userId, prevMonth.month, prevMonth.year, cutoffDate),
     queryFn: () =>
       fetchTransactions(userId, prevMonthRange.start, prevMonthRange.end),
     enabled: !!user && view === 'monthly',

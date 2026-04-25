@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
 import SkeletonLoader from '@/components/ui/SkeletonLoader';
 import EmptyState from '@/components/ui/EmptyState';
@@ -15,20 +15,39 @@ import {
   useUpdateBudget,
   useDeleteBudget,
 } from '@/hooks/useBudgets';
+import { useCutoffDate } from '@/hooks/useCutoffDate';
+import { getCycleRange, getCycleBudgetMonth, getCycleRangeForMonth } from '@/lib/cycle-utils';
 import type { BudgetWithSpending } from '@/types';
 
-function getCurrentMonthDate(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+function getDefaultMonthDate(cutoffDate: number = 1): string {
+  const cycleRange = getCycleRange(cutoffDate);
+  return getCycleBudgetMonth(cycleRange); // "YYYY-MM-01"
 }
 
 function formatMonthInput(monthDate: string): string {
   return monthDate.slice(0, 7);
 }
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+function formatShortDate(dateStr: string): string {
+  const [, m, d] = dateStr.split('-');
+  return `${parseInt(d, 10)} ${MONTH_NAMES[parseInt(m, 10) - 1]}`;
+}
+
 export default function BudgetsPage() {
-  const [month, setMonth] = useState(getCurrentMonthDate());
-  const { data: budgets, isLoading, error, refetch } = useBudgets(month);
+  const { cutoffDate } = useCutoffDate();
+  const [month, setMonth] = useState(() => getDefaultMonthDate());
+  const [monthInitialized, setMonthInitialized] = useState(false);
+
+  // Update default month once cutoffDate is loaded
+  useEffect(() => {
+    if (!monthInitialized) {
+      setMonth(getDefaultMonthDate(cutoffDate));
+      setMonthInitialized(true);
+    }
+  }, [cutoffDate, monthInitialized]);
+
+  const { data: budgets, isLoading, error, refetch } = useBudgets(month, cutoffDate);
   const budgetedCategoryIds = useBudgetedCategoryIds(month);
 
   const createBudget = useCreateBudget();
@@ -68,7 +87,7 @@ export default function BudgetsPage() {
   };
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className="p-4 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-heading text-text-primary">Anggaran</h1>
         <Button variant="primary" onClick={() => setFormOpen(true)}>
@@ -88,6 +107,17 @@ export default function BudgetsPage() {
           onChange={handleMonthChange}
           className="px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
         />
+        {cutoffDate > 1 && (() => {
+          const range = getCycleRangeForMonth(month, cutoffDate);
+          const endDate = new Date(range.end);
+          endDate.setDate(endDate.getDate() - 1);
+          const displayEnd = endDate.toISOString().split('T')[0];
+          return (
+            <p className="text-small text-text-muted mt-1">
+              Periode: {formatShortDate(range.start)} – {formatShortDate(displayEnd)}
+            </p>
+          );
+        })()}
       </div>
 
       {/* Loading state */}
@@ -138,6 +168,7 @@ export default function BudgetsPage() {
         onSubmit={handleCreate}
         loading={createBudget.isPending}
         budgetedCategoryIds={budgetedCategoryIds}
+        cutoffDate={cutoffDate}
       />
 
       {/* Edit form */}
@@ -147,6 +178,7 @@ export default function BudgetsPage() {
         onSubmit={handleEdit}
         loading={updateBudget.isPending}
         budget={editingBudget}
+        cutoffDate={cutoffDate}
       />
 
       {/* Delete confirmation */}

@@ -67,7 +67,7 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className="p-4 max-w-5xl mx-auto">
       <h1 className="text-heading text-text-primary mb-4">Transaksi</h1>
 
       {/* Search */}

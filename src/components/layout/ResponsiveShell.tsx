@@ -7,7 +7,7 @@ export default function ResponsiveShell({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen">
       <Sidebar className="hidden md:flex" />
-      <main className="flex-1 pb-16 md:pb-0">{children}</main>
+      <main className="flex-1 min-w-0 overflow-x-hidden pb-16 md:pb-0">{children}</main>
       <BottomNav className="md:hidden" />
     </div>
   );

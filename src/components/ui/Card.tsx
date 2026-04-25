@@ -19,7 +19,7 @@ export default function Card({
 }: CardProps) {
   return (
     <div
-      className={`rounded-xl bg-surface border border-border ${shadow ? 'shadow-sm' : ''} ${padding ? 'p-4' : ''} ${className}`}
+      className={`rounded-xl bg-surface border border-border overflow-hidden ${shadow ? 'shadow-sm' : ''} ${padding ? 'p-4' : ''} ${className}`}
     >
       {title && (
         <h3 className="text-subheading text-text-primary mb-3">{title}</h3>

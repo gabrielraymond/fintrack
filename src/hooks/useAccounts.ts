@@ -181,7 +181,7 @@ export function useUpdateAccount() {
     mutationFn: async ({
       id,
       ...updates
-    }: { id: string } & Partial<Pick<Account, 'name' | 'type'>>) => {
+    }: { id: string } & Partial<Pick<Account, 'name' | 'type' | 'balance' | 'credit_limit' | 'due_date' | 'target_amount'>>) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('accounts')

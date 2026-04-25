@@ -115,6 +115,7 @@ export interface UserProfile {
   onboarding_completed: boolean;
   theme_preference: 'light' | 'dark' | 'system';
   large_transaction_threshold: number;
+  cutoff_date: number;
   created_at: string;
   updated_at: string;
 }

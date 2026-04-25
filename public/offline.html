@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinTrack - Offline</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #F5F2EB;
+      color: #1B211A;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 400px;
+    }
+    .icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.5rem;
+      background: #628141;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    h1 {
+      color: #628141;
+      font-size: 1.5rem;
+      margin: 0 0 0.75rem;
+    }
+    p {
+      color: #4A5240;
+      line-height: 1.6;
+      margin: 0 0 1.5rem;
+    }
+    button {
+      background: #628141;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:active {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">F</div>
+    <h1>Anda Sedang Offline</h1>
+    <p>Tidak dapat terhubung ke internet. Silakan periksa koneksi internet Anda dan coba lagi.</p>
+    <button onclick="window.location.reload()">Coba Lagi</button>
+  </div>
+</body>
+</html>
