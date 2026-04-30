@@ -77,7 +77,7 @@ export default function AccountForm({
     const data: Parameters<typeof onSubmit>[0] = {
       name: name.trim(),
       type,
-      balance: Number(balance) || 0,
+      balance: isGold ? 0 : (Number(balance) || 0),
     };
     if (isCreditCard) {
       if (creditLimit) data.credit_limit = Number(creditLimit);
@@ -138,7 +138,8 @@ export default function AccountForm({
           </select>
         </div>
 
-        {/* Initial Balance */}
+        {/* Initial Balance — hidden for gold accounts */}
+        {!isGold && (
         <div>
           <label htmlFor="account-balance" className="block text-caption text-text-secondary mb-1">
             Saldo Awal (IDR)
@@ -152,6 +153,7 @@ export default function AccountForm({
             placeholder="0"
           />
         </div>
+        )}
 
         {/* Credit Card specific fields */}
         {isCreditCard && (

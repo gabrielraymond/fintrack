@@ -9,20 +9,69 @@
 -- 1. Update accounts type constraint to include 'gold'
 -- ------------------------------------------------------------
 ALTER TABLE accounts
-  DROP CONSTRAINT accounts_type_check,
+  DROP CONSTRAINT IF EXISTS accounts_type_check;
+
+ALTER TABLE accounts
   ADD CONSTRAINT accounts_type_check
     CHECK (type IN ('bank', 'e-wallet', 'cash', 'credit_card', 'investment', 'tabungan', 'dana_darurat', 'gold'));
 
 -- ------------------------------------------------------------
--- 2. Add gold-specific columns
+-- 2. Add gold-specific columns (IF NOT EXISTS)
+-- ------------------------------------------------------------
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'accounts' AND column_name = 'gold_brand'
+  ) THEN
+    ALTER TABLE accounts ADD COLUMN gold_brand TEXT CHECK (gold_brand IN ('antam', 'galeri24'));
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'accounts' AND column_name = 'gold_weight_grams'
+  ) THEN
+    ALTER TABLE accounts ADD COLUMN gold_weight_grams NUMERIC(10, 4);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'accounts' AND column_name = 'gold_purchase_price_per_gram'
+  ) THEN
+    ALTER TABLE accounts ADD COLUMN gold_purchase_price_per_gram BIGINT;
+  END IF;
+END $$;
+
+-- ------------------------------------------------------------
+-- 3. Clean up existing data to satisfy constraint
+--    - Non-gold accounts: ensure gold fields are NULL
+--    - Gold accounts without purchase price: set a default
+-- ------------------------------------------------------------
+UPDATE accounts
+SET gold_brand = NULL,
+    gold_weight_grams = NULL,
+    gold_purchase_price_per_gram = NULL
+WHERE type <> 'gold';
+
+UPDATE accounts
+SET gold_purchase_price_per_gram = 0
+WHERE type = 'gold' AND gold_purchase_price_per_gram IS NULL;
+
+-- Remove any gold accounts that would still violate (missing brand/weight)
+-- by converting them back to 'investment' type
+UPDATE accounts
+SET type = 'investment',
+    gold_brand = NULL,
+    gold_weight_grams = NULL,
+    gold_purchase_price_per_gram = NULL
+WHERE type = 'gold' AND (gold_brand IS NULL OR gold_weight_grams IS NULL OR gold_weight_grams <= 0 OR gold_purchase_price_per_gram IS NULL OR gold_purchase_price_per_gram <= 0);
+
+-- ------------------------------------------------------------
+-- 4. Add/replace constraint for gold fields validation
 -- ------------------------------------------------------------
 ALTER TABLE accounts
-  ADD COLUMN gold_brand TEXT CHECK (gold_brand IN ('antam', 'galeri24')),
-  ADD COLUMN gold_weight_grams NUMERIC(10, 4),
-  ADD COLUMN gold_purchase_price_per_gram BIGINT;
+  DROP CONSTRAINT IF EXISTS gold_fields_check;
 
--- Add constraint: gold accounts must have brand, weight, and purchase price
--- Non-gold accounts should not have these fields
 ALTER TABLE accounts
   ADD CONSTRAINT gold_fields_check
     CHECK (
@@ -31,5 +80,7 @@ ALTER TABLE accounts
       (type <> 'gold' AND gold_brand IS NULL AND gold_weight_grams IS NULL AND gold_purchase_price_per_gram IS NULL)
     );
 
--- Index for gold accounts
-CREATE INDEX idx_accounts_gold ON accounts(user_id, type) WHERE type = 'gold' AND is_deleted = false;
+-- ------------------------------------------------------------
+-- 5. Index for gold accounts
+-- ------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_accounts_gold ON accounts(user_id, type) WHERE type = 'gold' AND is_deleted = false;

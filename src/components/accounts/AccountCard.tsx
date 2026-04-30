@@ -50,12 +50,15 @@ export default function AccountCard({ account, onEdit, onDelete }: AccountCardPr
         </div>
       </div>
 
-      <p
-        className={`text-heading mt-2 ${isNegative ? 'text-danger' : 'text-text-primary'}`}
-        aria-label={`Saldo ${formatIDR(account.balance)}`}
-      >
-        {formatIDR(account.balance)}
-      </p>
+      {/* Balance — hide for gold accounts (value shown in GoldPriceDisplay) */}
+      {account.type !== 'gold' && (
+        <p
+          className={`text-heading mt-2 ${isNegative ? 'text-danger' : 'text-text-primary'}`}
+          aria-label={`Saldo ${formatIDR(account.balance)}`}
+        >
+          {formatIDR(account.balance)}
+        </p>
+      )}
 
       {account.type === 'credit_card' && account.credit_limit !== null && (
         <CreditCardProgress
