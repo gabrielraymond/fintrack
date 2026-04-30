@@ -1,4 +1,4 @@
-import type { AccountType, GoalCategory } from '@/types';
+import type { AccountType, GoalCategory, GoldBrand } from '@/types';
 
 /**
  * Default Indonesian expense/income categories seeded for new users.
@@ -31,6 +31,18 @@ export const ACCOUNT_TYPES: ReadonlyArray<{
   { value: 'investment', label: 'Investasi' },
   { value: 'tabungan', label: 'Tabungan' },
   { value: 'dana_darurat', label: 'Dana Darurat' },
+  { value: 'gold', label: 'Emas / Logam Mulia' },
+] as const;
+
+/**
+ * Gold brand definitions with labels.
+ */
+export const GOLD_BRANDS: ReadonlyArray<{
+  value: GoldBrand;
+  label: string;
+}> = [
+  { value: 'antam', label: 'LM Antam' },
+  { value: 'galeri24', label: 'Galeri24' },
 ] as const;
 
 /**

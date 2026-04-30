@@ -31,8 +31,8 @@ describe('OPERATIONAL_ACCOUNT_TYPES', () => {
 });
 
 describe('SAVINGS_ACCOUNT_TYPES', () => {
-  it('contains tabungan, dana_darurat, investment', () => {
-    expect(SAVINGS_ACCOUNT_TYPES).toEqual(['tabungan', 'dana_darurat', 'investment']);
+  it('contains tabungan, dana_darurat, investment, gold', () => {
+    expect(SAVINGS_ACCOUNT_TYPES).toEqual(['tabungan', 'dana_darurat', 'investment', 'gold']);
   });
 });
 
@@ -50,6 +50,7 @@ describe('classifyAccountType', () => {
     ['tabungan', 'savings'],
     ['dana_darurat', 'savings'],
     ['investment', 'savings'],
+    ['gold', 'savings'],
   ] as const)('classifies %s as %s', (type, expected) => {
     expect(classifyAccountType(type)).toBe(expected);
   });

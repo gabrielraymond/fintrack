@@ -7,7 +7,7 @@ export const OPERATIONAL_ACCOUNT_TYPES: ReadonlyArray<AccountType> = [
 
 /** Tipe akun simpanan & investasi */
 export const SAVINGS_ACCOUNT_TYPES: ReadonlyArray<AccountType> = [
-  'tabungan', 'dana_darurat', 'investment',
+  'tabungan', 'dana_darurat', 'investment', 'gold',
 ] as const;
 
 export type AccountClassification = 'operational' | 'savings';

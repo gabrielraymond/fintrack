@@ -12,6 +12,8 @@ const baseAccount: Account = {
   credit_limit: null,
   due_date: null,
   target_amount: null,
+  gold_brand: null,
+  gold_weight_grams: null,
   is_deleted: false,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',

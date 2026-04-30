@@ -16,7 +16,7 @@ import {
   useSoftDeleteAccount,
 } from '@/hooks/useAccounts';
 import { partitionAccounts } from '@/lib/accountClassifier';
-import type { Account, AccountType } from '@/types';
+import type { Account, AccountType, GoldBrand } from '@/types';
 
 export default function AccountsPage() {
   const [page, setPage] = useState(0);
@@ -52,6 +52,8 @@ export default function AccountsPage() {
     credit_limit?: number;
     due_date?: number;
     target_amount?: number;
+    gold_brand?: GoldBrand;
+    gold_weight_grams?: number;
   }) => {
     createAccount.mutate(formData, {
       onSuccess: () => setFormOpen(false),
@@ -65,6 +67,8 @@ export default function AccountsPage() {
     credit_limit?: number;
     due_date?: number;
     target_amount?: number;
+    gold_brand?: GoldBrand;
+    gold_weight_grams?: number;
   }) => {
     if (!editingAccount) return;
     updateAccount.mutate(
@@ -76,6 +80,8 @@ export default function AccountsPage() {
         credit_limit: formData.credit_limit ?? null,
         due_date: formData.due_date ?? null,
         target_amount: formData.target_amount ?? null,
+        gold_brand: formData.gold_brand ?? null,
+        gold_weight_grams: formData.gold_weight_grams ?? null,
       },
       { onSuccess: () => setEditingAccount(null) },
     );

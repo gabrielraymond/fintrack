@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
-import { ACCOUNT_TYPES } from '@/lib/constants';
-import type { Account, AccountType } from '@/types';
+import { ACCOUNT_TYPES, GOLD_BRANDS } from '@/lib/constants';
+import type { Account, AccountType, GoldBrand } from '@/types';
 
 export interface AccountFormProps {
   open: boolean;
@@ -16,6 +16,8 @@ export interface AccountFormProps {
     credit_limit?: number;
     due_date?: number;
     target_amount?: number;
+    gold_brand?: GoldBrand;
+    gold_weight_grams?: number;
   }) => void;
   loading?: boolean;
   /** Pass an account to edit; omit for create mode */
@@ -37,6 +39,8 @@ export default function AccountForm({
   const [creditLimit, setCreditLimit] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
+  const [goldBrand, setGoldBrand] = useState<GoldBrand>('antam');
+  const [goldWeight, setGoldWeight] = useState('');
 
   useEffect(() => {
     if (account) {
@@ -46,6 +50,8 @@ export default function AccountForm({
       setCreditLimit(account.credit_limit !== null ? String(account.credit_limit) : '');
       setDueDate(account.due_date !== null ? String(account.due_date) : '');
       setTargetAmount(account.target_amount !== null ? String(account.target_amount) : '');
+      setGoldBrand(account.gold_brand ?? 'antam');
+      setGoldWeight(account.gold_weight_grams !== null ? String(account.gold_weight_grams) : '');
     } else {
       setName('');
       setType('bank');
@@ -53,11 +59,14 @@ export default function AccountForm({
       setCreditLimit('');
       setDueDate('');
       setTargetAmount('');
+      setGoldBrand('antam');
+      setGoldWeight('');
     }
   }, [account, open]);
 
   const isCreditCard = type === 'credit_card';
   const isSavingsType = type === 'tabungan' || type === 'dana_darurat';
+  const isGold = type === 'gold';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,10 +82,14 @@ export default function AccountForm({
     if (isSavingsType && targetAmount) {
       data.target_amount = Number(targetAmount);
     }
+    if (isGold) {
+      data.gold_brand = goldBrand;
+      data.gold_weight_grams = Number(goldWeight) || 0;
+    }
     onSubmit(data);
   };
 
-  const isValid = name.trim().length > 0;
+  const isValid = name.trim().length > 0 && (!isGold || (Number(goldWeight) > 0));
 
   return (
     <Modal
@@ -185,6 +198,48 @@ export default function AccountForm({
               placeholder="0"
             />
           </div>
+        )}
+
+        {/* Gold / Precious Metal specific fields */}
+        {isGold && (
+          <>
+            <div>
+              <label htmlFor="gold-brand" className="block text-caption text-text-secondary mb-1">
+                Merek Emas
+              </label>
+              <select
+                id="gold-brand"
+                value={goldBrand}
+                onChange={(e) => setGoldBrand(e.target.value as GoldBrand)}
+                className="w-full px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+              >
+                {GOLD_BRANDS.map((b) => (
+                  <option key={b.value} value={b.value}>
+                    {b.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="gold-weight" className="block text-caption text-text-secondary mb-1">
+                Berat (gram)
+              </label>
+              <input
+                id="gold-weight"
+                type="number"
+                min={0.01}
+                step={0.01}
+                value={goldWeight}
+                onChange={(e) => setGoldWeight(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Contoh: 1, 5, 10, 25"
+                required
+              />
+              <p className="text-caption text-text-muted mt-1">
+                Masukkan total berat emas yang dimiliki
+              </p>
+            </div>
+          </>
         )}
 
         {/* Actions */}

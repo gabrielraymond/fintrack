@@ -9,6 +9,8 @@ const makeAccount = (overrides: Partial<Account> & { id: string; name: string; t
   credit_limit: null,
   due_date: null,
   target_amount: null,
+  gold_brand: null,
+  gold_weight_grams: null,
   is_deleted: false,
   created_at: '',
   updated_at: '',

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { formatIDR } from '@/lib/formatters';
 
 interface NumpadStepProps {
@@ -15,6 +15,7 @@ export default function NumpadStep({ initialAmount, onConfirm }: NumpadStepProps
     initialAmount > 0 ? String(initialAmount) : ''
   );
   const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const currentAmount = digits === '' ? 0 : parseInt(digits, 10);
 
@@ -42,8 +43,43 @@ export default function NumpadStep({ initialAmount, onConfirm }: NumpadStepProps
     onConfirm(currentAmount);
   }, [currentAmount, onConfirm]);
 
+  // Keyboard support for PC users
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        handleDigit(e.key);
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        handleBackspace();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConfirm();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleDigit, handleBackspace, handleConfirm]);
+
+  // Auto-focus container for keyboard accessibility
+  useEffect(() => {
+    containerRef.current?.focus();
+  }, []);
+
   return (
-    <div className="space-y-4">
+    <div
+      ref={containerRef}
+      className="space-y-4"
+      tabIndex={-1}
+      style={{ outline: 'none' }}
+    >
       {/* Amount display */}
       <div className="text-center py-4">
         <p className="text-caption text-text-muted mb-1">Jumlah</p>
@@ -59,6 +95,9 @@ export default function NumpadStep({ initialAmount, onConfirm }: NumpadStepProps
             {error}
           </p>
         )}
+        <p className="text-caption text-text-muted mt-1 hidden md:block">
+          Gunakan keyboard untuk mengetik angka
+        </p>
       </div>
 
       {/* Numpad grid */}
@@ -68,7 +107,7 @@ export default function NumpadStep({ initialAmount, onConfirm }: NumpadStepProps
             key={digit}
             type="button"
             onClick={() => handleDigit(digit)}
-            className="h-14 rounded-lg bg-surface-secondary text-heading text-text-primary hover:bg-border transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+            className="h-14 rounded-lg bg-surface-secondary text-heading text-text-primary hover:bg-border active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer select-none"
             aria-label={digit}
           >
             {digit}
@@ -78,7 +117,7 @@ export default function NumpadStep({ initialAmount, onConfirm }: NumpadStepProps
         <button
           type="button"
           onClick={() => handleDigit('0')}
-          className="h-14 rounded-lg bg-surface-secondary text-heading text-text-primary hover:bg-border transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+          className="h-14 rounded-lg bg-surface-secondary text-heading text-text-primary hover:bg-border active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer select-none"
           aria-label="0"
         >
           0
@@ -86,7 +125,7 @@ export default function NumpadStep({ initialAmount, onConfirm }: NumpadStepProps
         <button
           type="button"
           onClick={handleBackspace}
-          className="h-14 rounded-lg bg-surface-secondary text-heading text-text-primary hover:bg-border transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+          className="h-14 rounded-lg bg-surface-secondary text-heading text-text-primary hover:bg-border active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer select-none"
           aria-label="Hapus digit terakhir"
         >
           ⌫
@@ -94,7 +133,7 @@ export default function NumpadStep({ initialAmount, onConfirm }: NumpadStepProps
         <button
           type="button"
           onClick={handleConfirm}
-          className="h-14 rounded-lg bg-primary text-primary-foreground text-heading hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+          className="h-14 rounded-lg bg-primary text-primary-foreground text-heading hover:bg-primary-dark active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer select-none"
           aria-label="Konfirmasi jumlah"
         >
           ✓

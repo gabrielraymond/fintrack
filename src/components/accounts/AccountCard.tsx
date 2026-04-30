@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import CreditCardProgress from './CreditCardProgress';
 import SavingsProgressBar from './SavingsProgressBar';
+import GoldPriceDisplay from './GoldPriceDisplay';
 import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { ACCOUNT_TYPES } from '@/lib/constants';
 import type { Account } from '@/types';
@@ -69,6 +70,15 @@ export default function AccountCard({ account, onEdit, onDelete }: AccountCardPr
           <SavingsProgressBar
             balance={account.balance}
             targetAmount={account.target_amount}
+          />
+        )}
+
+      {account.type === 'gold' &&
+        account.gold_brand !== null &&
+        account.gold_weight_grams !== null && (
+          <GoldPriceDisplay
+            brand={account.gold_brand}
+            weightGrams={account.gold_weight_grams}
           />
         )}
     </Card>

@@ -78,6 +78,8 @@ describe('Property 3: Credit Card Reminder Interval', () => {
             credit_limit: 5000000,
             due_date: dueDay,
             target_amount: null,
+            gold_brand: null,
+            gold_weight_grams: null,
             is_deleted: false,
             created_at: '2024-01-01T00:00:00Z',
             updated_at: '2024-01-01T00:00:00Z',

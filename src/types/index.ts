@@ -2,7 +2,9 @@
 // Enums / Union Types
 // ============================================================
 
-export type AccountType = 'bank' | 'e-wallet' | 'cash' | 'credit_card' | 'investment' | 'tabungan' | 'dana_darurat';
+export type AccountType = 'bank' | 'e-wallet' | 'cash' | 'credit_card' | 'investment' | 'tabungan' | 'dana_darurat' | 'gold';
+
+export type GoldBrand = 'antam' | 'galeri24';
 
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -27,6 +29,8 @@ export interface Account {
   credit_limit: number | null;
   due_date: number | null;
   target_amount: number | null;
+  gold_brand: GoldBrand | null;
+  gold_weight_grams: number | null;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -170,6 +174,8 @@ export interface AccountFormInput {
   credit_limit?: number;
   due_date?: number;
   target_amount?: number;
+  gold_brand?: GoldBrand;
+  gold_weight_grams?: number;
 }
 
 export interface TransactionFormInput {

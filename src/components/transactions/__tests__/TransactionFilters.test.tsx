@@ -4,8 +4,8 @@ import TransactionFilters from '../TransactionFilters';
 
 // Mock hooks
 const mockAccounts = [
-  { id: 'a1', user_id: 'u1', name: 'BCA', type: 'bank' as const, balance: 100, credit_limit: null, due_date: null, is_deleted: false, created_at: '', updated_at: '' },
-  { id: 'a2', user_id: 'u1', name: 'GoPay', type: 'e-wallet' as const, balance: 50, credit_limit: null, due_date: null, is_deleted: false, created_at: '', updated_at: '' },
+  { id: 'a1', user_id: 'u1', name: 'BCA', type: 'bank' as const, balance: 100, credit_limit: null, due_date: null, target_amount: null, gold_brand: null, gold_weight_grams: null, is_deleted: false, created_at: '', updated_at: '' },
+  { id: 'a2', user_id: 'u1', name: 'GoPay', type: 'e-wallet' as const, balance: 50, credit_limit: null, due_date: null, target_amount: null, gold_brand: null, gold_weight_grams: null, is_deleted: false, created_at: '', updated_at: '' },
 ];
 
 const mockCategories = [
