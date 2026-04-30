@@ -5,8 +5,8 @@ import type { GoldBrand } from '@/types';
 
 export interface GoldPrice {
   brand: GoldBrand;
-  buyPrice: number;
-  sellPrice: number;
+  sellPrice: number;    // harga jual per gram (harga beli konsumen)
+  buybackPrice: number; // harga buyback per gram (harga jual konsumen ke toko)
   updatedAt: string;
 }
 
@@ -30,14 +30,14 @@ export const goldPriceKeys = {
 
 /**
  * Fetches realtime gold prices for Antam and Galeri24.
- * Auto-refreshes every 15 minutes.
+ * Auto-refreshes every 30 minutes.
  */
 export function useGoldPrices() {
   return useQuery({
     queryKey: goldPriceKeys.all,
     queryFn: fetchGoldPrices,
-    staleTime: 15 * 60 * 1000, // 15 minutes
-    refetchInterval: 15 * 60 * 1000, // auto-refresh every 15 min
+    staleTime: 30 * 60 * 1000,
+    refetchInterval: 30 * 60 * 1000,
     retry: 2,
   });
 }
@@ -49,14 +49,4 @@ export function useGoldPrice(brand: GoldBrand | null) {
   const { data: prices, ...rest } = useGoldPrices();
   const price = brand ? prices?.find((p) => p.brand === brand) ?? null : null;
   return { price, ...rest };
-}
-
-/**
- * Calculates the estimated value of gold holdings.
- */
-export function calculateGoldValue(
-  weightGrams: number,
-  sellPricePerGram: number
-): number {
-  return Math.round(weightGrams * sellPricePerGram);
 }

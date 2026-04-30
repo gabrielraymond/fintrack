@@ -75,10 +75,12 @@ export default function AccountCard({ account, onEdit, onDelete }: AccountCardPr
 
       {account.type === 'gold' &&
         account.gold_brand !== null &&
-        account.gold_weight_grams !== null && (
+        account.gold_weight_grams !== null &&
+        account.gold_purchase_price_per_gram !== null && (
           <GoldPriceDisplay
             brand={account.gold_brand}
             weightGrams={account.gold_weight_grams}
+            purchasePricePerGram={account.gold_purchase_price_per_gram}
           />
         )}
     </Card>

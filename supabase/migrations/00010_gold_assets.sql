@@ -2,7 +2,7 @@
 -- FinTrack Gold/Precious Metal Assets — Schema Migration
 -- ============================================================
 -- 1. Adds 'gold' to accounts type constraint
--- 2. Adds gold_brand and gold_weight_grams columns
+-- 2. Adds gold_brand, gold_weight_grams, gold_purchase_price_per_gram columns
 -- Requirements: Gold asset tracking with brand (antam, galeri24)
 
 -- ------------------------------------------------------------
@@ -18,16 +18,17 @@ ALTER TABLE accounts
 -- ------------------------------------------------------------
 ALTER TABLE accounts
   ADD COLUMN gold_brand TEXT CHECK (gold_brand IN ('antam', 'galeri24')),
-  ADD COLUMN gold_weight_grams NUMERIC(10, 4);
+  ADD COLUMN gold_weight_grams NUMERIC(10, 4),
+  ADD COLUMN gold_purchase_price_per_gram BIGINT;
 
--- Add constraint: gold accounts must have brand and weight
+-- Add constraint: gold accounts must have brand, weight, and purchase price
 -- Non-gold accounts should not have these fields
 ALTER TABLE accounts
   ADD CONSTRAINT gold_fields_check
     CHECK (
-      (type = 'gold' AND gold_brand IS NOT NULL AND gold_weight_grams IS NOT NULL AND gold_weight_grams > 0)
+      (type = 'gold' AND gold_brand IS NOT NULL AND gold_weight_grams IS NOT NULL AND gold_weight_grams > 0 AND gold_purchase_price_per_gram IS NOT NULL AND gold_purchase_price_per_gram > 0)
       OR
-      (type <> 'gold' AND gold_brand IS NULL AND gold_weight_grams IS NULL)
+      (type <> 'gold' AND gold_brand IS NULL AND gold_weight_grams IS NULL AND gold_purchase_price_per_gram IS NULL)
     );
 
 -- Index for gold accounts

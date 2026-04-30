@@ -54,6 +54,7 @@ export default function AccountsPage() {
     target_amount?: number;
     gold_brand?: GoldBrand;
     gold_weight_grams?: number;
+    gold_purchase_price_per_gram?: number;
   }) => {
     createAccount.mutate(formData, {
       onSuccess: () => setFormOpen(false),
@@ -69,6 +70,7 @@ export default function AccountsPage() {
     target_amount?: number;
     gold_brand?: GoldBrand;
     gold_weight_grams?: number;
+    gold_purchase_price_per_gram?: number;
   }) => {
     if (!editingAccount) return;
     updateAccount.mutate(
@@ -82,6 +84,7 @@ export default function AccountsPage() {
         target_amount: formData.target_amount ?? null,
         gold_brand: formData.gold_brand ?? null,
         gold_weight_grams: formData.gold_weight_grams ?? null,
+        gold_purchase_price_per_gram: formData.gold_purchase_price_per_gram ?? null,
       },
       { onSuccess: () => setEditingAccount(null) },
     );

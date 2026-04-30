@@ -14,6 +14,7 @@ const baseAccount: Account = {
   target_amount: null,
   gold_brand: null,
   gold_weight_grams: null,
+  gold_purchase_price_per_gram: null,
   is_deleted: false,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',

@@ -18,6 +18,7 @@ export interface AccountFormProps {
     target_amount?: number;
     gold_brand?: GoldBrand;
     gold_weight_grams?: number;
+    gold_purchase_price_per_gram?: number;
   }) => void;
   loading?: boolean;
   /** Pass an account to edit; omit for create mode */
@@ -41,6 +42,7 @@ export default function AccountForm({
   const [targetAmount, setTargetAmount] = useState('');
   const [goldBrand, setGoldBrand] = useState<GoldBrand>('antam');
   const [goldWeight, setGoldWeight] = useState('');
+  const [goldPurchasePrice, setGoldPurchasePrice] = useState('');
 
   useEffect(() => {
     if (account) {
@@ -52,6 +54,7 @@ export default function AccountForm({
       setTargetAmount(account.target_amount !== null ? String(account.target_amount) : '');
       setGoldBrand(account.gold_brand ?? 'antam');
       setGoldWeight(account.gold_weight_grams !== null ? String(account.gold_weight_grams) : '');
+      setGoldPurchasePrice(account.gold_purchase_price_per_gram !== null ? String(account.gold_purchase_price_per_gram) : '');
     } else {
       setName('');
       setType('bank');
@@ -61,6 +64,7 @@ export default function AccountForm({
       setTargetAmount('');
       setGoldBrand('antam');
       setGoldWeight('');
+      setGoldPurchasePrice('');
     }
   }, [account, open]);
 
@@ -85,11 +89,12 @@ export default function AccountForm({
     if (isGold) {
       data.gold_brand = goldBrand;
       data.gold_weight_grams = Number(goldWeight) || 0;
+      data.gold_purchase_price_per_gram = Number(goldPurchasePrice) || 0;
     }
     onSubmit(data);
   };
 
-  const isValid = name.trim().length > 0 && (!isGold || (Number(goldWeight) > 0));
+  const isValid = name.trim().length > 0 && (!isGold || (Number(goldWeight) > 0 && Number(goldPurchasePrice) > 0));
 
   return (
     <Modal
@@ -237,6 +242,24 @@ export default function AccountForm({
               />
               <p className="text-caption text-text-muted mt-1">
                 Masukkan total berat emas yang dimiliki
+              </p>
+            </div>
+            <div>
+              <label htmlFor="gold-purchase-price" className="block text-caption text-text-secondary mb-1">
+                Harga Beli per Gram (IDR)
+              </label>
+              <input
+                id="gold-purchase-price"
+                type="number"
+                min={1}
+                value={goldPurchasePrice}
+                onChange={(e) => setGoldPurchasePrice(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Contoh: 1200000"
+                required
+              />
+              <p className="text-caption text-text-muted mt-1">
+                Harga saat Anda membeli emas per gram
               </p>
             </div>
           </>

@@ -11,6 +11,7 @@ const makeAccount = (overrides: Partial<Account> & { id: string; name: string; t
   target_amount: null,
   gold_brand: null,
   gold_weight_grams: null,
+  gold_purchase_price_per_gram: null,
   is_deleted: false,
   created_at: '',
   updated_at: '',
