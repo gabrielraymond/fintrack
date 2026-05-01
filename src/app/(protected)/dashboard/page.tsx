@@ -78,8 +78,8 @@ export default function DashboardPage() {
 
   if (hasError && !isLoading) {
     return (
-      <div className="p-4 max-w-5xl mx-auto">
-        <h1 className="text-heading text-text-primary mb-4">Dashboard</h1>
+      <div className="px-3 py-2 md:p-4 max-w-5xl mx-auto">
+        <h1 className="text-body font-bold text-text-primary md:text-heading mb-3">Dashboard</h1>
         <ErrorState
           message="Gagal memuat data dashboard. Silakan coba lagi."
           onRetry={() => {
@@ -92,8 +92,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-4 max-w-5xl mx-auto space-y-4">
-      <h1 className="text-heading text-text-primary">Dashboard</h1>
+    <div className="px-3 py-2 md:p-4 max-w-5xl mx-auto space-y-3">
+      <h1 className="text-body font-bold text-text-primary md:text-heading">Dashboard</h1>
 
       {/* Credit card due date warnings */}
       {!accountsLoading && <CreditCardDueWarnings accounts={accounts} />}
@@ -101,18 +101,24 @@ export default function DashboardPage() {
       {/* Transaction Preset Chips */}
       <TransactionPresetChips />
 
-      {/* Net Worth */}
+      {/* Net Worth + Monthly Summary — side by side on md+ */}
       {isLoading ? (
-        <SkeletonLoader height="5rem" shape="rect" />
+        <div className="grid md:grid-cols-2 gap-3">
+          <SkeletonLoader height="5rem" shape="rect" />
+          <SkeletonLoader height="5rem" shape="rect" />
+        </div>
       ) : (
-        <NetWorthCard total={breakdown.total} operational={breakdown.operational} savings={breakdown.savings} />
+        <div className="grid md:grid-cols-2 gap-3">
+          <NetWorthCard total={breakdown.total} operational={breakdown.operational} savings={breakdown.savings} />
+          <MonthlySummaryCard />
+        </div>
       )}
 
       {/* Account Summary Strips */}
       {isLoading ? (
-        <div className="flex gap-3 overflow-hidden">
+        <div className="flex gap-2 overflow-hidden">
           {Array.from({ length: 3 }).map((_, i) => (
-            <SkeletonLoader key={i} width="140px" height="4rem" shape="rect" />
+            <SkeletonLoader key={i} width="120px" height="3rem" shape="rect" />
           ))}
         </div>
       ) : (
@@ -122,38 +128,31 @@ export default function DashboardPage() {
         </>
       )}
 
-      {/* Monthly Summary */}
-      {isLoading ? (
-        <SkeletonLoader height="6rem" shape="rect" />
-      ) : (
-        <MonthlySummaryCard />
-      )}
-
       {/* Cash Flow Chart */}
       {isLoading ? (
-        <SkeletonLoader height="14rem" shape="rect" />
+        <SkeletonLoader height="12rem" shape="rect" />
       ) : (
         <CashFlowChart transactions={monthlyTransactions ?? []} />
       )}
 
-      {/* Budget Progress */}
+      {/* Budget + Savings — side by side on md+ */}
       {isLoading ? (
         <SkeletonLoader height="8rem" shape="rect" />
       ) : (
-        <BudgetProgressSection />
+        <div className="grid md:grid-cols-2 gap-3">
+          <BudgetProgressSection />
+          <SavingsProgressSection accounts={accounts} />
+        </div>
       )}
 
-      {/* Savings Progress */}
-      {!isLoading && <SavingsProgressSection accounts={accounts} />}
-
-      {/* Goals Progress */}
-      {!isLoading && <GoalsProgressSection />}
-
-      {/* Recent Transactions */}
+      {/* Goals + Recent Transactions — side by side on md+ */}
       {isLoading ? (
-        <SkeletonLoader height="10rem" shape="rect" />
+        <SkeletonLoader height="8rem" shape="rect" />
       ) : (
-        <RecentTransactions />
+        <div className="grid md:grid-cols-2 gap-3">
+          <GoalsProgressSection />
+          <RecentTransactions />
+        </div>
       )}
 
       {/* FAB */}

@@ -50,25 +50,25 @@ export default function RecentTransactions() {
   if (isLoading) return null;
 
   return (
-    <Card>
-      <p className="text-caption text-text-secondary mb-3">Transaksi Terakhir</p>
+    <Card className="!p-3">
+      <p className="text-[11px] text-text-secondary mb-2">Transaksi Terakhir</p>
       {(!transactions || transactions.length === 0) ? (
-        <p className="text-body text-text-muted text-center py-4">
+        <p className="text-caption text-text-muted text-center py-2">
           Belum ada transaksi
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           {transactions.map((tx) => (
             <div key={tx.id} className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-body text-text-primary truncate">
+                <p className="text-caption text-text-primary truncate">
                   {tx.note || typeLabel[tx.type]}
                 </p>
-                <p className="text-small text-text-muted">
+                <p className="text-[11px] text-text-muted">
                   {formatDate(tx.date)}
                 </p>
               </div>
-              <p className={`text-body font-semibold ml-2 ${typeColor[tx.type]}`}>
+              <p className={`text-caption font-semibold ml-2 ${typeColor[tx.type]}`}>
                 {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
                 {formatIDR(tx.amount)}
               </p>

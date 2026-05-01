@@ -32,6 +32,7 @@ export interface Account {
   gold_brand: GoldBrand | null;
   gold_weight_grams: number | null;
   gold_purchase_price_per_gram: number | null;
+  invested_amount: number | null;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -178,6 +179,7 @@ export interface AccountFormInput {
   gold_brand?: GoldBrand;
   gold_weight_grams?: number;
   gold_purchase_price_per_gram?: number;
+  invested_amount?: number;
 }
 
 export interface TransactionFormInput {

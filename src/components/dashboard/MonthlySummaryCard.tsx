@@ -87,8 +87,8 @@ export default function MonthlySummaryCard() {
     : `Ringkasan ${formatShortDate(cycleStart)} – ${formatShortDate(displayEnd)}`;
 
   return (
-    <Card>
-      <p className="text-caption text-text-secondary mb-3">{periodLabel}</p>
+    <Card className="!p-3">
+      <p className="text-[11px] text-text-secondary mb-2">{periodLabel}</p>
       <div className="grid grid-cols-3 gap-2 text-center overflow-hidden">
         <div className="min-w-0">
           <p className="text-caption text-text-secondary">Pemasukan</p>

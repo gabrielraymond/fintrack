@@ -23,16 +23,16 @@ export default function SavingsProgressSection({ accounts }: SavingsProgressSect
   if (savingsWithTargets.length === 0) return null;
 
   return (
-    <Card>
-      <p className="text-caption text-text-secondary mb-3">Progres Tabungan</p>
-      <div className="space-y-4">
+    <Card className="!p-3">
+      <p className="text-[11px] text-text-secondary mb-2">Progres Tabungan</p>
+      <div className="space-y-2">
         {savingsWithTargets.map((account) => (
           <div key={account.id}>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-caption text-text-primary font-medium">
+            <div className="flex justify-between items-center mb-0.5">
+              <span className="text-[11px] text-text-primary font-medium">
                 {account.name}
               </span>
-              <span className="text-caption text-text-secondary">
+              <span className="text-[11px] text-text-secondary">
                 {formatIDR(account.balance)} / {formatIDR(account.target_amount!)}
               </span>
             </div>

@@ -1,17 +1,10 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const navItems = [
-  { label: 'Beranda', href: '/dashboard', icon: HomeIcon },
-  { label: 'Transaksi', href: '/transactions', icon: TransactionIcon },
-  { label: 'Akun', href: '/accounts', icon: AccountIcon },
-  { label: 'Anggaran', href: '/budgets', icon: BudgetIcon },
-  { label: 'Goals', href: '/goals', icon: GoalIcon },
-  { label: 'Laporan', href: '/reports', icon: ReportIcon },
-  { label: 'Pengaturan', href: '/settings', icon: SettingsIcon },
-];
+/* ── Icon components ─────────────────────────────────────── */
 
 function HomeIcon({ className }: { className?: string }) {
   return (
@@ -79,22 +72,71 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
+function MoreIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="19" r="1" />
+    </svg>
+  );
+}
+
+/* ── Nav config ──────────────────────────────────────────── */
+
+const primaryItems = [
+  { label: 'Beranda', href: '/dashboard', icon: HomeIcon },
+  { label: 'Transaksi', href: '/transactions', icon: TransactionIcon },
+  { label: 'Akun', href: '/accounts', icon: AccountIcon },
+  { label: 'Anggaran', href: '/budgets', icon: BudgetIcon },
+];
+
+const moreItems = [
+  { label: 'Goals', href: '/goals', icon: GoalIcon },
+  { label: 'Laporan', href: '/reports', icon: ReportIcon },
+  { label: 'Pengaturan', href: '/settings', icon: SettingsIcon },
+];
+
+/* ── Component ───────────────────────────────────────────── */
+
 export default function BottomNav({ className }: { className?: string }) {
   const pathname = usePathname();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  const isMoreActive = moreItems.some(
+    (item) => pathname === item.href || pathname.startsWith(item.href + '/'),
+  );
+
+  // Close "more" menu on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    }
+    if (moreOpen) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [moreOpen]);
+
+  // Close on route change
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [pathname]);
 
   return (
     <nav
       className={`fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-surface pb-safe-bottom ${className ?? ''}`}
       aria-label="Navigasi utama"
     >
-      <ul className="flex items-center justify-around h-16">
-        {navItems.map((item) => {
+      <ul className="flex items-center justify-around h-14">
+        {primaryItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1 text-small transition-colors ${
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 text-[11px] transition-colors ${
                   isActive
                     ? 'text-primary font-semibold'
                     : 'text-text-secondary hover:text-primary'
@@ -107,6 +149,49 @@ export default function BottomNav({ className }: { className?: string }) {
             </li>
           );
         })}
+
+        {/* More menu */}
+        <li>
+          <div ref={moreRef} className="relative">
+            <button
+              onClick={() => setMoreOpen((prev) => !prev)}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 text-[11px] transition-colors ${
+                isMoreActive || moreOpen
+                  ? 'text-primary font-semibold'
+                  : 'text-text-secondary hover:text-primary'
+              }`}
+              aria-expanded={moreOpen}
+              aria-haspopup="true"
+              aria-label="Menu lainnya"
+            >
+              <MoreIcon className="w-5 h-5" />
+              <span>Lainnya</span>
+            </button>
+
+            {moreOpen && (
+              <div className="absolute bottom-full right-0 mb-2 w-44 rounded-lg border border-border bg-surface shadow-lg overflow-hidden">
+                {moreItems.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-3 text-caption transition-colors ${
+                        isActive
+                          ? 'text-primary font-semibold bg-primary/5'
+                          : 'text-text-secondary hover:bg-surface-secondary hover:text-text-primary'
+                      }`}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      <item.icon className="w-4 h-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </li>
       </ul>
     </nav>
   );

@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import ThemeToggle from '@/components/ui/ThemeToggle';
-import NotificationBell from '@/components/layout/NotificationBell';
 
 const navItems = [
   { label: 'Beranda', href: '/dashboard', icon: HomeIcon },
@@ -107,9 +106,8 @@ export default function Sidebar({ className }: { className?: string }) {
       className={`w-60 border-r border-border bg-surface flex-col h-screen sticky top-0 ${className ?? ''}`}
       aria-label="Navigasi utama"
     >
-      <div className="px-4 py-6 flex items-center justify-between">
+      <div className="px-4 py-6">
         <h1 className="text-heading text-primary font-bold">FinTrack</h1>
-        <NotificationBell />
       </div>
       <ul className="flex flex-col gap-1 px-2 flex-1">
         {navItems.map((item) => {

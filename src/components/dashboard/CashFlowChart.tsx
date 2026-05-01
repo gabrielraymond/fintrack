@@ -50,9 +50,9 @@ export default function CashFlowChart({ transactions }: CashFlowChartProps) {
 
   if (data.length === 0) {
     return (
-      <Card>
-        <p className="text-caption text-text-secondary mb-2">Arus Kas</p>
-        <p className="text-body text-text-muted text-center py-4">
+      <Card className="!p-3">
+        <p className="text-[11px] text-text-secondary mb-2">Arus Kas</p>
+        <p className="text-caption text-text-muted text-center py-3">
           Belum ada data bulan ini
         </p>
       </Card>
@@ -60,9 +60,9 @@ export default function CashFlowChart({ transactions }: CashFlowChartProps) {
   }
 
   return (
-    <Card>
-      <p className="text-caption text-text-secondary mb-2">Arus Kas</p>
-      <div className="w-full h-48">
+    <Card className="!p-3">
+      <p className="text-[11px] text-text-secondary mb-1">Arus Kas</p>
+      <div className="w-full h-40">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
             <XAxis dataKey="day" tick={{ fontSize: 11 }} />

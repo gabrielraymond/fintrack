@@ -15,6 +15,7 @@ const baseAccount: Account = {
   gold_brand: null,
   gold_weight_grams: null,
   gold_purchase_price_per_gram: null,
+  invested_amount: null,
   is_deleted: false,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
@@ -69,5 +70,39 @@ describe('AccountCard', () => {
     render(<AccountCard account={baseAccount} onEdit={vi.fn()} onDelete={onDelete} />);
     fireEvent.click(screen.getByLabelText(/Hapus akun BCA/));
     expect(onDelete).toHaveBeenCalledWith(baseAccount);
+  });
+
+  it('shows InvestmentPLDisplay for investment account with valid invested_amount', () => {
+    const investmentAccount: Account = {
+      ...baseAccount,
+      name: 'Stockbit',
+      type: 'investment',
+      balance: 15000000,
+      invested_amount: 10000000,
+    };
+    render(<AccountCard account={investmentAccount} onEdit={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.getByText('Total Modal')).toBeInTheDocument();
+    expect(screen.getByText('Keuntungan')).toBeInTheDocument();
+  });
+
+  it('hides InvestmentPLDisplay for investment account without invested_amount', () => {
+    const investmentNoModal: Account = {
+      ...baseAccount,
+      name: 'Pluang',
+      type: 'investment',
+      balance: 5000000,
+      invested_amount: null,
+    };
+    render(<AccountCard account={investmentNoModal} onEdit={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.queryByText('Total Modal')).not.toBeInTheDocument();
+    expect(screen.queryByText('Keuntungan')).not.toBeInTheDocument();
+    expect(screen.queryByText('Kerugian')).not.toBeInTheDocument();
+  });
+
+  it('does not show InvestmentPLDisplay for non-investment accounts', () => {
+    render(<AccountCard account={baseAccount} onEdit={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.queryByText('Total Modal')).not.toBeInTheDocument();
+    expect(screen.queryByText('Keuntungan')).not.toBeInTheDocument();
+    expect(screen.queryByText('Kerugian')).not.toBeInTheDocument();
   });
 });

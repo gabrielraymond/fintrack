@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import CreditCardProgress from './CreditCardProgress';
 import SavingsProgressBar from './SavingsProgressBar';
 import GoldPriceDisplay from './GoldPriceDisplay';
+import InvestmentPLDisplay from './InvestmentPLDisplay';
 import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { ACCOUNT_TYPES } from '@/lib/constants';
 import type { Account } from '@/types';
@@ -84,6 +85,15 @@ export default function AccountCard({ account, onEdit, onDelete }: AccountCardPr
             brand={account.gold_brand}
             weightGrams={account.gold_weight_grams}
             purchasePricePerGram={account.gold_purchase_price_per_gram}
+          />
+        )}
+
+      {account.type === 'investment' &&
+        account.invested_amount !== null &&
+        account.invested_amount > 0 && (
+          <InvestmentPLDisplay
+            balance={account.balance}
+            investedAmount={account.invested_amount}
           />
         )}
     </Card>

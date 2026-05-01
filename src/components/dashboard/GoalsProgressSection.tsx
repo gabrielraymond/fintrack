@@ -16,19 +16,19 @@ export default function GoalsProgressSection() {
   const hasMore = (allActiveGoals?.length ?? 0) > 3;
 
   return (
-    <Card>
-      <div className="flex justify-between items-center mb-3">
-        <p className="text-caption text-text-secondary">Tujuan Keuangan</p>
+    <Card className="!p-3">
+      <div className="flex justify-between items-center mb-2">
+        <p className="text-[11px] text-text-secondary">Tujuan Keuangan</p>
         {hasMore && (
           <Link
             href="/goals"
-            className="text-caption text-primary hover:underline"
+            className="text-[11px] text-primary hover:underline"
           >
             Lihat Semua
           </Link>
         )}
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {topGoals.map((goal) => {
           const progress =
             goal.target_amount > 0
@@ -37,15 +37,15 @@ export default function GoalsProgressSection() {
 
           return (
             <div key={goal.id}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-caption text-text-primary font-medium">
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="text-[11px] text-text-primary font-medium">
                   {goal.name}
                 </span>
-                <span className="text-caption text-text-secondary">
+                <span className="text-[11px] text-text-secondary">
                   {progress}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary rounded-full transition-all"
                   style={{ width: `${Math.min(progress, 100)}%` }}

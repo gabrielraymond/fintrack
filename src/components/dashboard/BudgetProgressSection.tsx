@@ -28,19 +28,19 @@ export default function BudgetProgressSection() {
     : `Anggaran ${formatDay(cycleRange.start)} – ${formatDay(displayEnd)}`;
 
   return (
-    <Card>
-      <p className="text-caption text-text-secondary mb-3">{budgetLabel}</p>
-      <div className="space-y-3">
+    <Card className="!p-3">
+      <p className="text-[11px] text-text-secondary mb-2">{budgetLabel}</p>
+      <div className="space-y-2">
         {budgets.map((budget) => {
           const categoryName = budget.category?.name ?? 'Kategori';
           const categoryIcon = budget.category?.icon ?? '📦';
           return (
             <div key={budget.id}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-caption text-text-primary">
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="text-[11px] text-text-primary">
                   {categoryIcon} {categoryName}
                 </span>
-                <span className="text-caption text-text-secondary">
+                <span className="text-[11px] text-text-secondary">
                   {formatIDR(budget.spent)} / {formatIDR(budget.limit_amount)}
                 </span>
               </div>
