@@ -28,5 +28,6 @@ export function useCutoffDate() {
   return {
     cutoffDate: query.data ?? DEFAULT_CUTOFF_DATE,
     isLoading: query.isLoading,
+    isReady: query.isFetched && !query.isLoading,
   };
 }

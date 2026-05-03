@@ -69,7 +69,7 @@ function CreditCardDueWarnings({ accounts }: { accounts: Account[] }) {
 export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const { breakdown, accounts, isLoading: accountsLoading, error: accountsError, refetch: refetchAccounts } = useNetWorth();
-  const { data: monthlyTransactions, isLoading: txLoading, error: txError, refetch: refetchTx } = useCurrentMonthTransactions();
+  const { isLoading: txLoading, error: txError, refetch: refetchTx } = useCurrentMonthTransactions();
 
   const { operational, savings } = useMemo(() => partitionAccounts(accounts), [accounts]);
 
@@ -109,7 +109,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-3">
-          <NetWorthCard total={breakdown.total} operational={breakdown.operational} savings={breakdown.savings} />
+          <NetWorthCard total={breakdown.total} operational={breakdown.operational} savings={breakdown.savings} cash={breakdown.cash} creditCardDebt={breakdown.creditCardDebt} />
           <MonthlySummaryCard />
         </div>
       )}
@@ -129,11 +129,7 @@ export default function DashboardPage() {
       )}
 
       {/* Cash Flow Chart */}
-      {isLoading ? (
-        <SkeletonLoader height="12rem" shape="rect" />
-      ) : (
-        <CashFlowChart transactions={monthlyTransactions ?? []} />
-      )}
+      <CashFlowChart />
 
       {/* Budget + Savings — side by side on md+ */}
       {isLoading ? (

@@ -90,6 +90,23 @@ export function getCycleRangeForMonth(
   return { start, end };
 }
 
+/**
+ * Menghitung budget month sebelumnya.
+ * Input: "2024-03-01" → Output: "2024-02-01"
+ * Input: "2024-01-01" → Output: "2023-12-01"
+ */
+export function getPreviousMonth(budgetMonth: string): string {
+  const parts = budgetMonth.split('-');
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10); // 1-indexed
+
+  if (month === 1) {
+    return `${year - 1}-12-01`;
+  }
+
+  return `${year}-${String(month - 1).padStart(2, '0')}-01`;
+}
+
 /** Format tanggal ke "YYYY-MM-DD" dari komponen year, month (0-indexed), day. */
 export function formatDate(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;

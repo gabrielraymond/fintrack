@@ -9,9 +9,11 @@ export interface ModalProps {
   title: string;
   children: React.ReactNode;
   className?: string;
+  /** Opsional: konten footer yang tetap terlihat di bawah (tidak ikut scroll) */
+  footer?: React.ReactNode;
 }
 
-export default function Modal({ open, onClose, title, children, className = '' }: ModalProps) {
+export default function Modal({ open, onClose, title, children, className = '', footer }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const titleId = useRef(`modal-title-${Math.random().toString(36).slice(2, 9)}`).current;
@@ -111,10 +113,10 @@ export default function Modal({ open, onClose, title, children, className = '' }
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`relative z-10 w-full max-w-lg mx-4 bg-surface rounded-xl shadow-lg ${className}`}
+        className={`relative z-10 w-full max-w-lg mx-4 bg-surface rounded-xl shadow-lg flex flex-col max-h-[90vh] sm:max-h-[85vh] ${className}`}
         tabIndex={-1}
       >
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border">
           <h2 id={titleId} className="text-heading text-text-primary">
             {title}
           </h2>
@@ -128,7 +130,12 @@ export default function Modal({ open, onClose, title, children, className = '' }
             </svg>
           </button>
         </div>
-        <div className="p-4">{children}</div>
+        <div className="p-4 flex-1 overflow-y-auto min-h-0">{children}</div>
+        {footer && (
+          <div className="flex-shrink-0 p-4 border-t border-border">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

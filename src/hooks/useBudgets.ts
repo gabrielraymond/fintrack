@@ -78,6 +78,7 @@ async function fetchBudgetsWithSpending(
       category_id: b.category_id,
       month: b.month,
       limit_amount: b.limit_amount,
+      is_recurring: b.is_recurring,
       created_at: b.created_at,
       updated_at: b.updated_at,
       spent,
@@ -132,6 +133,7 @@ export function useCreateBudget() {
           category_id: input.category_id,
           month: input.month,
           limit_amount: input.limit_amount,
+          is_recurring: input.is_recurring,
         })
         .select()
         .single();
@@ -180,10 +182,12 @@ export function useUpdateBudget() {
       id,
       limit_amount,
       month,
+      is_recurring,
     }: {
       id: string;
       limit_amount: number;
       month?: string;
+      is_recurring?: boolean;
     }) => {
       const supabase = createClient();
       const updateFields: Record<string, unknown> = {
@@ -192,6 +196,9 @@ export function useUpdateBudget() {
       };
       if (month) {
         updateFields.month = month;
+      }
+      if (is_recurring !== undefined) {
+        updateFields.is_recurring = is_recurring;
       }
 
       const { data, error } = await supabase

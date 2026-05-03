@@ -16,17 +16,37 @@ import { useReports } from '@/hooks/useReports';
 import type { ReportView } from '@/hooks/useReports';
 import { useCutoffDate } from '@/hooks/useCutoffDate';
 import {
-  canNavigateNext,
   getPreviousMonth,
   getNextMonth,
 } from '@/lib/report-utils';
+import { canNavigateCashFlowNext } from '@/lib/cashflow-utils';
+import { getCycleRange, getCycleBudgetMonth, getCycleRangeForMonth } from '@/lib/cycle-utils';
 
 export default function ReportsPage() {
-  const now = new Date();
-  const [month, setMonth] = useState(now.getMonth());
-  const [year, setYear] = useState(now.getFullYear());
+  const { cutoffDate, isReady: cutoffReady } = useCutoffDate();
+
+  const [month, setMonth] = useState(() => new Date().getMonth());
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [periodInitialized, setPeriodInitialized] = useState(false);
   const [view, setView] = useState<ReportView>('monthly');
-  const { cutoffDate } = useCutoffDate();
+
+  // Re-initialize period once cutoffDate is loaded from server
+  React.useEffect(() => {
+    if (!periodInitialized && cutoffReady) {
+      const cycleRange = getCycleRange(cutoffDate);
+      const budgetMonth = getCycleBudgetMonth(cycleRange);
+      const m = parseInt(budgetMonth.slice(5, 7), 10) - 1;
+      const y = parseInt(budgetMonth.slice(0, 4), 10);
+      setMonth(m);
+      setYear(y);
+      setPeriodInitialized(true);
+    }
+  }, [cutoffDate, cutoffReady, periodInitialized]);
+
+  const cycleRange = React.useMemo(
+    () => getCycleRangeForMonth(`${year}-${String(month + 1).padStart(2, '0')}`, cutoffDate),
+    [month, year, cutoffDate],
+  );
 
   const {
     summary,
@@ -46,7 +66,7 @@ export default function ReportsPage() {
   };
 
   const handleNext = () => {
-    if (canNavigateNext(month, year)) {
+    if (canNavigateCashFlowNext(month, year, cutoffDate)) {
       const next = getNextMonth(month, year);
       setMonth(next.month);
       setYear(next.year);
@@ -76,7 +96,9 @@ export default function ReportsPage() {
           year={year}
           onPrevious={handlePrevious}
           onNext={handleNext}
-          canGoNext={canNavigateNext(month, year)}
+          canGoNext={canNavigateCashFlowNext(month, year, cutoffDate)}
+          cutoffDate={cutoffDate}
+          cycleRange={cycleRange}
         />
       )}
 

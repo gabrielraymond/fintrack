@@ -20,6 +20,7 @@ const baseBudget: BudgetWithSpending = {
   category_id: 'cat-1',
   month: '2024-06-01',
   limit_amount: 500000,
+  is_recurring: false,
   created_at: '2024-06-01T00:00:00Z',
   updated_at: '2024-06-01T00:00:00Z',
   spent: 100000,
@@ -86,6 +87,7 @@ describe('BudgetForm', () => {
       category_id: 'cat-1',
       month: '2024-09-01',
       limit_amount: 500000,
+      is_recurring: false,
     });
   });
 });

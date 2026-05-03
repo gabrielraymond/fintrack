@@ -93,6 +93,7 @@ export default function TransactionModal({
   const [state, setState] = useState<TransactionModalState>(() =>
     createInitialState(preset, transaction)
   );
+  const [stepFooter, setStepFooter] = useState<React.ReactNode>(null);
 
   const createMutation = useCreateTransaction();
   const updateMutation = useUpdateTransaction();
@@ -109,6 +110,7 @@ export default function TransactionModal({
   React.useEffect(() => {
     if (open) {
       setState(createInitialState(preset, transaction));
+      setStepFooter(null);
     }
   }, [open, preset, transaction]);
 
@@ -116,6 +118,13 @@ export default function TransactionModal({
     if (isEditing && state.step === 'type') return 'Edit Transaksi';
     return STEP_TITLES[state.step];
   }, [state.step, isEditing]);
+
+  // Clear step footer when step changes (non-account steps don't provide a footer)
+  React.useEffect(() => {
+    if (state.step !== 'account') {
+      setStepFooter(null);
+    }
+  }, [state.step]);
 
   // ── Step handlers ──
 
@@ -213,6 +222,7 @@ export default function TransactionModal({
             selectedAccountId={state.accountId}
             selectedDestinationId={state.destinationAccountId}
             onConfirm={handleAccountConfirm}
+            renderFooter={setStepFooter}
           />
         );
       case 'details':
@@ -230,7 +240,7 @@ export default function TransactionModal({
   };
 
   return (
-    <Modal open={open} onClose={handleClose} title={title}>
+    <Modal open={open} onClose={handleClose} title={title} footer={stepFooter}>
       {renderStep()}
     </Modal>
   );

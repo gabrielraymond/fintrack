@@ -3,14 +3,17 @@
 import React from 'react';
 import Card from '@/components/ui/Card';
 import BudgetProgressBar from '@/components/budgets/BudgetProgressBar';
+import BudgetHealthIndicator from '@/components/budgets/BudgetHealthIndicator';
 import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useCutoffDate } from '@/hooks/useCutoffDate';
+import { useNetWorth } from '@/hooks/useNetWorth';
 import { getCycleRange, getCycleBudgetMonth } from '@/lib/cycle-utils';
 
 export default function BudgetProgressSection() {
   const formatIDR = useFormatIDR();
   const { cutoffDate } = useCutoffDate();
+  const { breakdown } = useNetWorth();
   const cycleRange = getCycleRange(cutoffDate);
   const budgetMonth = getCycleBudgetMonth(cycleRange);
   const { data: budgets, isLoading } = useBudgets(budgetMonth, cutoffDate);
@@ -27,13 +30,29 @@ export default function BudgetProgressSection() {
     ? 'Anggaran Bulan Ini'
     : `Anggaran ${formatDay(cycleRange.start)} – ${formatDay(displayEnd)}`;
 
+  const totalBudget = budgets.reduce((sum, b) => sum + b.limit_amount, 0);
+  const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
+
   return (
     <Card className="!p-3">
       <p className="text-[11px] text-text-secondary mb-2">{budgetLabel}</p>
+
+      {/* Health indicator compact */}
+      <div className="mb-2">
+        <BudgetHealthIndicator
+          totalBudget={totalBudget}
+          cashBalance={breakdown.cash}
+          creditCardDebt={breakdown.creditCardDebt}
+          totalSpent={totalSpent}
+          compact
+        />
+      </div>
+
       <div className="space-y-2">
         {budgets.map((budget) => {
           const categoryName = budget.category?.name ?? 'Kategori';
           const categoryIcon = budget.category?.icon ?? '📦';
+          const remaining = budget.limit_amount - budget.spent;
           return (
             <div key={budget.id}>
               <div className="flex justify-between items-center mb-0.5">
@@ -49,6 +68,9 @@ export default function BudgetProgressSection() {
                 limit={budget.limit_amount}
                 status={budget.status}
               />
+              <p className={`text-[10px] mt-0.5 ${remaining < 0 ? 'text-danger' : 'text-text-muted'}`}>
+                Sisa: {formatIDR(remaining)}
+              </p>
             </div>
           );
         })}

@@ -20,6 +20,10 @@ export interface NetWorthBreakdown {
   total: number;
   operational: number;
   savings: number;
+  /** Saldo uang tunai saja (bank + e-wallet + cash), tanpa CC */
+  cash: number;
+  /** Hutang CC (nilai negatif atau nol) */
+  creditCardDebt: number;
 }
 
 /**
@@ -30,10 +34,16 @@ export interface NetWorthBreakdown {
 export function calculateNetWorthBreakdown(accounts: Account[]): NetWorthBreakdown {
   const active = accounts.filter((a) => !a.is_deleted);
   const { operational, savings } = partitionAccounts(active);
+
+  const cashAccounts = operational.filter((a) => a.type !== 'credit_card');
+  const ccAccounts = operational.filter((a) => a.type === 'credit_card');
+
   return {
     total: sumBalance(active),
     operational: sumBalance(operational),
     savings: sumBalance(savings),
+    cash: sumBalance(cashAccounts),
+    creditCardDebt: sumBalance(ccAccounts),
   };
 }
 

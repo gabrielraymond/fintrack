@@ -67,6 +67,7 @@ export interface Budget {
   category_id: string;
   month: string;
   limit_amount: number;
+  is_recurring: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -196,7 +197,9 @@ export interface BudgetFormInput {
   category_id: string;
   month: string;
   limit_amount: number;
+  is_recurring: boolean;
 }
+
 
 export interface PresetFormInput {
   name: string;

@@ -4,6 +4,7 @@ import {
   getCycleBudgetMonth,
   getCycleRangeForMonth,
   formatDate,
+  getPreviousMonth,
 } from './cycle-utils';
 
 describe('formatDate', () => {
@@ -144,5 +145,27 @@ describe('getCycleRangeForMonth', () => {
       start: '2024-06-10',
       end: '2024-07-10',
     });
+  });
+});
+
+describe('getPreviousMonth', () => {
+  it('returns previous month for mid-year date', () => {
+    expect(getPreviousMonth('2024-03-01')).toBe('2024-02-01');
+  });
+
+  it('returns previous month for February', () => {
+    expect(getPreviousMonth('2024-02-01')).toBe('2024-01-01');
+  });
+
+  it('handles year boundary — January to December of previous year', () => {
+    expect(getPreviousMonth('2024-01-01')).toBe('2023-12-01');
+  });
+
+  it('returns previous month for December', () => {
+    expect(getPreviousMonth('2024-12-01')).toBe('2024-11-01');
+  });
+
+  it('handles single-digit months with zero padding', () => {
+    expect(getPreviousMonth('2024-06-01')).toBe('2024-05-01');
   });
 });

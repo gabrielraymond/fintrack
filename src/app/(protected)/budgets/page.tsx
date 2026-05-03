@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Button from '@/components/ui/Button';
 import SkeletonLoader from '@/components/ui/SkeletonLoader';
 import EmptyState from '@/components/ui/EmptyState';
@@ -8,6 +8,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import BudgetCard from '@/components/budgets/BudgetCard';
 import BudgetForm from '@/components/budgets/BudgetForm';
+import BudgetHealthIndicator from '@/components/budgets/BudgetHealthIndicator';
 import {
   useBudgets,
   useBudgetedCategoryIds,
@@ -16,6 +17,8 @@ import {
   useDeleteBudget,
 } from '@/hooks/useBudgets';
 import { useCutoffDate } from '@/hooks/useCutoffDate';
+import { useCarryOverBudgets } from '@/hooks/useCarryOverBudgets';
+import { useNetWorth } from '@/hooks/useNetWorth';
 import { getCycleRange, getCycleBudgetMonth, getCycleRangeForMonth } from '@/lib/cycle-utils';
 import type { BudgetWithSpending } from '@/types';
 
@@ -34,21 +37,62 @@ function formatShortDate(dateStr: string): string {
   return `${parseInt(d, 10)} ${MONTH_NAMES[parseInt(m, 10) - 1]}`;
 }
 
+type BudgetSort = 'usage-desc' | 'usage-asc' | 'limit-desc' | 'remaining-asc' | 'name-asc';
+
+const SORT_OPTIONS: { value: BudgetSort; label: string }[] = [
+  { value: 'usage-desc', label: 'Pemakaian ↓' },
+  { value: 'usage-asc', label: 'Pemakaian ↑' },
+  { value: 'remaining-asc', label: 'Sisa terkecil' },
+  { value: 'limit-desc', label: 'Limit terbesar' },
+  { value: 'name-asc', label: 'Nama A-Z' },
+];
+
+function sortBudgets(budgets: BudgetWithSpending[], sort: BudgetSort): BudgetWithSpending[] {
+  const sorted = [...budgets];
+  switch (sort) {
+    case 'usage-desc':
+      return sorted.sort((a, b) => {
+        const ra = a.limit_amount > 0 ? a.spent / a.limit_amount : 0;
+        const rb = b.limit_amount > 0 ? b.spent / b.limit_amount : 0;
+        return rb - ra;
+      });
+    case 'usage-asc':
+      return sorted.sort((a, b) => {
+        const ra = a.limit_amount > 0 ? a.spent / a.limit_amount : 0;
+        const rb = b.limit_amount > 0 ? b.spent / b.limit_amount : 0;
+        return ra - rb;
+      });
+    case 'remaining-asc':
+      return sorted.sort((a, b) => (a.limit_amount - a.spent) - (b.limit_amount - b.spent));
+    case 'limit-desc':
+      return sorted.sort((a, b) => b.limit_amount - a.limit_amount);
+    case 'name-asc':
+      return sorted.sort((a, b) => (a.category?.name ?? '').localeCompare(b.category?.name ?? ''));
+    default:
+      return sorted;
+  }
+}
+
 export default function BudgetsPage() {
-  const { cutoffDate } = useCutoffDate();
+  const { cutoffDate, isReady: cutoffReady } = useCutoffDate();
   const [month, setMonth] = useState(() => getDefaultMonthDate());
   const [monthInitialized, setMonthInitialized] = useState(false);
 
-  // Update default month once cutoffDate is loaded
+  // Update default month once cutoffDate is loaded from server
   useEffect(() => {
-    if (!monthInitialized) {
+    if (!monthInitialized && cutoffReady) {
       setMonth(getDefaultMonthDate(cutoffDate));
       setMonthInitialized(true);
     }
-  }, [cutoffDate, monthInitialized]);
+  }, [cutoffDate, cutoffReady, monthInitialized]);
 
   const { data: budgets, isLoading, error, refetch } = useBudgets(month, cutoffDate);
   const budgetedCategoryIds = useBudgetedCategoryIds(month);
+
+  // Auto carry-over recurring budgets when page loads
+  useCarryOverBudgets(month, cutoffDate);
+
+  const { breakdown } = useNetWorth();
 
   const createBudget = useCreateBudget();
   const updateBudget = useUpdateBudget();
@@ -57,17 +101,23 @@ export default function BudgetsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<BudgetWithSpending | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BudgetWithSpending | null>(null);
+  const [sort, setSort] = useState<BudgetSort>('usage-desc');
 
-  const handleCreate = (data: { category_id: string; month: string; limit_amount: number }) => {
+  const sortedBudgets = useMemo(
+    () => budgets ? sortBudgets(budgets, sort) : [],
+    [budgets, sort],
+  );
+
+  const handleCreate = (data: { category_id: string; month: string; limit_amount: number; is_recurring: boolean }) => {
     createBudget.mutate(data, {
       onSuccess: () => setFormOpen(false),
     });
   };
 
-  const handleEdit = (data: { category_id: string; month: string; limit_amount: number }) => {
+  const handleEdit = (data: { category_id: string; month: string; limit_amount: number; is_recurring: boolean }) => {
     if (!editingBudget) return;
     updateBudget.mutate(
-      { id: editingBudget.id, limit_amount: data.limit_amount, month: data.month },
+      { id: editingBudget.id, limit_amount: data.limit_amount, month: data.month, is_recurring: data.is_recurring },
       { onSuccess: () => setEditingBudget(null) },
     );
   };
@@ -120,6 +170,35 @@ export default function BudgetsPage() {
         })()}
       </div>
 
+      {/* Budget Health Indicator */}
+      {budgets && budgets.length > 0 && (
+        <div className="mb-4">
+          <BudgetHealthIndicator
+            totalBudget={budgets.reduce((sum, b) => sum + b.limit_amount, 0)}
+            totalSpent={budgets.reduce((sum, b) => sum + b.spent, 0)}
+            cashBalance={breakdown.cash}
+            creditCardDebt={breakdown.creditCardDebt}
+          />
+        </div>
+      )}
+
+      {/* Sort */}
+      {budgets && budgets.length > 1 && (
+        <div className="mb-3 flex items-center gap-2">
+          <label htmlFor="budget-sort" className="text-caption text-text-secondary">Urutkan:</label>
+          <select
+            id="budget-sort"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as BudgetSort)}
+            className="px-2 py-1 border border-border rounded-lg text-caption text-text-primary bg-surface focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Loading state */}
       {isLoading && (
         <div className="space-y-4" role="status" aria-label="Memuat anggaran...">
@@ -148,9 +227,9 @@ export default function BudgetsPage() {
       )}
 
       {/* Budget cards */}
-      {!isLoading && !error && budgets && budgets.length > 0 && (
-        <div className="space-y-4">
-          {budgets.map((budget) => (
+      {!isLoading && !error && sortedBudgets.length > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          {sortedBudgets.map((budget) => (
             <BudgetCard
               key={budget.id}
               budget={budget}

@@ -10,7 +10,7 @@ import { getCycleRange, getCycleBudgetMonth } from '@/lib/cycle-utils';
 export interface BudgetFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { category_id: string; month: string; limit_amount: number }) => void;
+  onSubmit: (data: { category_id: string; month: string; limit_amount: number; is_recurring: boolean }) => void;
   loading?: boolean;
   /** Pass a budget to edit; omit for create mode */
   budget?: BudgetWithSpending | null;
@@ -45,6 +45,7 @@ export default function BudgetForm({
   const [categoryId, setCategoryId] = useState('');
   const [month, setMonth] = useState(getDefaultMonth(cutoffDate));
   const [limitAmount, setLimitAmount] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
 
   useEffect(() => {
     if (budget) {
@@ -52,10 +53,12 @@ export default function BudgetForm({
       // budget.month is "2024-03-01", convert to "2024-03"
       setMonth(budget.month.slice(0, 7));
       setLimitAmount(String(budget.limit_amount));
+      setIsRecurring(budget.is_recurring ?? false);
     } else {
       setCategoryId('');
       setMonth(getDefaultMonth(cutoffDate));
       setLimitAmount('');
+      setIsRecurring(false);
     }
   }, [budget, open, cutoffDate]);
 
@@ -65,6 +68,7 @@ export default function BudgetForm({
       category_id: categoryId,
       month: monthInputToDate(month),
       limit_amount: Number(limitAmount) || 0,
+      is_recurring: isRecurring,
     });
   };
 
@@ -134,6 +138,20 @@ export default function BudgetForm({
             placeholder="0"
             min={1}
           />
+        </div>
+
+        {/* Recurring Toggle */}
+        <div className="flex items-center gap-2">
+          <input
+            id="budget-recurring"
+            type="checkbox"
+            checked={isRecurring}
+            onChange={(e) => setIsRecurring(e.target.checked)}
+            className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
+          />
+          <label htmlFor="budget-recurring" className="text-body text-text-primary">
+            Anggaran Berulang
+          </label>
         </div>
 
         {/* Actions */}

@@ -1,46 +1,35 @@
 'use client';
 
 import React from 'react';
-import { getFullMonthName } from '@/lib/report-utils';
 import { formatCashFlowPeriodLabel } from '@/lib/cashflow-utils';
-import type { CycleRange } from '@/lib/cycle-utils';
+import { type CycleRange } from '@/lib/cycle-utils';
 
-export interface PeriodSelectorProps {
+export interface CashFlowPeriodSelectorProps {
   month: number;        // 0-11
   year: number;
+  cutoffDate: number;
+  cycleRange: CycleRange;
   onPrevious: () => void;
   onNext: () => void;
-  canGoNext: boolean;   // false if at current month
-  /** Optional: cutoff date for cycle-aware label */
-  cutoffDate?: number;
-  /** Optional: cycle range for formatting the label */
-  cycleRange?: CycleRange;
+  canGoNext: boolean;
 }
 
-export default function PeriodSelector({
-  month,
-  year,
+export default function CashFlowPeriodSelector({
+  cutoffDate,
+  cycleRange,
   onPrevious,
   onNext,
   canGoNext,
-  cutoffDate,
-  cycleRange,
-}: PeriodSelectorProps) {
-  let label: string;
-  if (cutoffDate && cutoffDate > 1 && cycleRange) {
-    label = formatCashFlowPeriodLabel(cycleRange, cutoffDate);
-  } else {
-    const monthName = getFullMonthName(month);
-    label = `${monthName} ${year}`;
-  }
+}: CashFlowPeriodSelectorProps) {
+  const label = formatCashFlowPeriodLabel(cycleRange, cutoffDate);
 
   return (
-    <div className="flex items-center justify-between" role="group" aria-label="Navigasi periode">
+    <div className="flex items-center justify-between" role="group" aria-label="Navigasi periode arus kas">
       <button
         type="button"
         onClick={onPrevious}
         className="p-2 rounded-lg text-text-primary hover:bg-surface-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-        aria-label="Bulan sebelumnya"
+        aria-label="Periode sebelumnya"
       >
         <svg
           width="20"
@@ -73,7 +62,7 @@ export default function PeriodSelector({
             ? 'text-text-primary hover:bg-surface-secondary'
             : 'text-text-tertiary opacity-50 cursor-not-allowed'
         }`}
-        aria-label="Bulan berikutnya"
+        aria-label="Periode berikutnya"
         aria-disabled={!canGoNext}
       >
         <svg

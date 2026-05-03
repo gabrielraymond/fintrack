@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAccounts } from '@/hooks/useAccounts';
 import { formatIDR } from '@/lib/formatters';
 import { classifyAccountType } from '@/lib/accountClassifier';
@@ -10,6 +10,8 @@ interface AccountStepProps {
   selectedAccountId: string | null;
   selectedDestinationId: string | null;
   onConfirm: (accountId: string, destinationAccountId?: string) => void;
+  /** Callback to render the action button in an external footer (e.g. Modal footer slot) */
+  renderFooter?: (footer: React.ReactNode) => void;
 }
 
 export default function AccountStep({
@@ -17,6 +19,7 @@ export default function AccountStep({
   selectedAccountId,
   selectedDestinationId,
   onConfirm,
+  renderFooter,
 }: AccountStepProps) {
   const { data, isLoading } = useAccounts(0);
   const accounts = useMemo(() => data?.data ?? [], [data?.data]);
@@ -48,6 +51,31 @@ export default function AccountStep({
     setError(null);
     onConfirm(accountId, destinationId ?? undefined);
   };
+
+  // Use a ref so the footer button always calls the latest handleConfirm
+  const handleConfirmRef = React.useRef(handleConfirm);
+  handleConfirmRef.current = handleConfirm;
+
+  // Push the action button to the parent's footer slot when renderFooter is provided
+  useEffect(() => {
+    if (renderFooter) {
+      renderFooter(
+        <button
+          type="button"
+          onClick={() => handleConfirmRef.current()}
+          className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-body font-medium hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+          aria-label="Konfirmasi akun"
+        >
+          Lanjut
+        </button>
+      );
+    }
+    return () => {
+      if (renderFooter) {
+        renderFooter(null);
+      }
+    };
+  }, [renderFooter]);
 
   if (isLoading) {
     return (
@@ -139,14 +167,16 @@ export default function AccountStep({
         <p className="text-caption text-danger" role="alert">{error}</p>
       )}
 
-      <button
-        type="button"
-        onClick={handleConfirm}
-        className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-body font-medium hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-        aria-label="Konfirmasi akun"
-      >
-        Lanjut
-      </button>
+      {!renderFooter && (
+        <button
+          type="button"
+          onClick={handleConfirm}
+          className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-body font-medium hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+          aria-label="Konfirmasi akun"
+        >
+          Lanjut
+        </button>
+      )}
     </div>
   );
 }

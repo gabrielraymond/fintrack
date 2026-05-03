@@ -8,10 +8,13 @@ export interface NetWorthCardProps {
   total: number;
   operational: number;
   savings: number;
+  cash: number;
+  creditCardDebt: number;
 }
 
-export default function NetWorthCard({ total, operational, savings }: NetWorthCardProps) {
+export default function NetWorthCard({ total, operational, savings, cash, creditCardDebt }: NetWorthCardProps) {
   const formatIDR = useFormatIDR();
+  const hasCC = creditCardDebt !== 0;
 
   return (
     <Card className="!p-3">
@@ -31,6 +34,13 @@ export default function NetWorthCard({ total, operational, savings }: NetWorthCa
           >
             {formatIDR(operational)}
           </p>
+          {/* Breakdown: Tunai vs CC */}
+          <div className="flex gap-2 mt-0.5">
+            <span className="text-[10px] text-text-muted">Tunai: <span className="text-text-secondary">{formatIDR(cash)}</span></span>
+            {hasCC && (
+              <span className="text-[10px] text-text-muted">CC: <span className="text-danger">{formatIDR(creditCardDebt)}</span></span>
+            )}
+          </div>
         </div>
         <div className="min-w-0">
           <p className="text-[11px] text-text-secondary">Simpanan</p>

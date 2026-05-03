@@ -64,6 +64,7 @@ const makeBudget = (overrides: Partial<Budget> = {}): Budget => ({
   category_id: 'cat-1',
   month: '2024-03-01',
   limit_amount: 500000,
+  is_recurring: false,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
   ...overrides,
@@ -192,5 +193,70 @@ describe('useUpdateBudget', () => {
     // Verify the retry callback is a function
     const retryCallback = mockShowError.mock.calls[0][1];
     expect(typeof retryCallback).toBe('function');
+  });
+
+  it('includes is_recurring in update fields when provided as true', async () => {
+    const updated = makeBudget({ is_recurring: true });
+    const updateMock = vi.fn().mockReturnThis();
+    supabaseChain = createSupabaseMock({
+      update: updateMock,
+      single: vi.fn().mockResolvedValue({ data: updated, error: null }),
+    });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useUpdateBudget(), { wrapper });
+
+    await act(async () => {
+      result.current.mutate({ id: 'budget-1', limit_amount: 500000, is_recurring: true });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updateCallArg = updateMock.mock.calls[0][0];
+    expect(updateCallArg).toHaveProperty('is_recurring', true);
+    expect(updateCallArg).toHaveProperty('limit_amount', 500000);
+    expect(updateCallArg).toHaveProperty('updated_at');
+  });
+
+  it('includes is_recurring in update fields when provided as false', async () => {
+    const updated = makeBudget({ is_recurring: false });
+    const updateMock = vi.fn().mockReturnThis();
+    supabaseChain = createSupabaseMock({
+      update: updateMock,
+      single: vi.fn().mockResolvedValue({ data: updated, error: null }),
+    });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useUpdateBudget(), { wrapper });
+
+    await act(async () => {
+      result.current.mutate({ id: 'budget-1', limit_amount: 500000, is_recurring: false });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updateCallArg = updateMock.mock.calls[0][0];
+    expect(updateCallArg).toHaveProperty('is_recurring', false);
+  });
+
+  it('does not include is_recurring in update fields when not provided', async () => {
+    const updated = makeBudget();
+    const updateMock = vi.fn().mockReturnThis();
+    supabaseChain = createSupabaseMock({
+      update: updateMock,
+      single: vi.fn().mockResolvedValue({ data: updated, error: null }),
+    });
+
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useUpdateBudget(), { wrapper });
+
+    await act(async () => {
+      result.current.mutate({ id: 'budget-1', limit_amount: 500000 });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updateCallArg = updateMock.mock.calls[0][0];
+    expect(updateCallArg).not.toHaveProperty('is_recurring');
   });
 });
