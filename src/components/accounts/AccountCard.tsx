@@ -7,17 +7,21 @@ import CreditCardProgress from './CreditCardProgress';
 import SavingsProgressBar from './SavingsProgressBar';
 import GoldPriceDisplay from './GoldPriceDisplay';
 import InvestmentPLDisplay from './InvestmentPLDisplay';
+import AccountCommitmentIndicator from './AccountCommitmentIndicator';
 import { useFormatIDR } from '@/hooks/useFormatIDR';
 import { ACCOUNT_TYPES } from '@/lib/constants';
 import type { Account } from '@/types';
+import type { AccountLimitData } from '@/hooks/useCommitmentLimits';
 
 export interface AccountCardProps {
   account: Account;
   onEdit: (account: Account) => void;
   onDelete: (account: Account) => void;
+  /** Limit data from useCommitmentLimits; shows commitment indicator when present and obligation > 0 */
+  limitData?: AccountLimitData;
 }
 
-export default function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
+export default function AccountCard({ account, onEdit, onDelete, limitData }: AccountCardProps) {
   const formatIDR = useFormatIDR();
   const typeLabel =
     ACCOUNT_TYPES.find((t) => t.value === account.type)?.label ?? account.type;
@@ -96,6 +100,15 @@ export default function AccountCard({ account, onEdit, onDelete }: AccountCardPr
             investedAmount={account.invested_amount}
           />
         )}
+
+      {limitData && limitData.totalMonthlyObligation > 0 && (
+        <AccountCommitmentIndicator
+          accountId={account.id}
+          totalMonthlyObligation={limitData.totalMonthlyObligation}
+          currentEffectiveLimit={limitData.currentEffectiveLimit}
+          projectedEffectiveLimit={limitData.projectedEffectiveLimit}
+        />
+      )}
     </Card>
   );
 }

@@ -14,6 +14,9 @@ const TYPE_ICONS: Record<string, string> = {
   budget_alert: '🔔',
   cc_reminder: '💳',
   large_transaction: '⚠️',
+  goal_milestone: '🎯',
+  payment_due_today: '📅',
+  commitment_alert: '⚠️',
 };
 
 function getRelativeTime(dateStr: string): string {

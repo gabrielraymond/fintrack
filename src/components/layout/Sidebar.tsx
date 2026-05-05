@@ -11,6 +11,7 @@ const navItems = [
   { label: 'Akun', href: '/accounts', icon: AccountIcon },
   { label: 'Anggaran', href: '/budgets', icon: BudgetIcon },
   { label: 'Goals', href: '/goals', icon: GoalIcon },
+  { label: 'Cicilan', href: '/commitments', icon: CommitmentIcon },
   { label: 'Laporan', href: '/reports', icon: ReportIcon },
   { label: 'Pengaturan', href: '/settings', icon: SettingsIcon },
 ];
@@ -68,6 +69,17 @@ function ReportIcon({ className }: { className?: string }) {
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  );
+}
+
+function CommitmentIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <path d="M2 10h20" />
+      <path d="M7 15h2" />
+      <path d="M11 15h4" />
     </svg>
   );
 }

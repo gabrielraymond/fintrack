@@ -117,6 +117,7 @@ export function useCreateAccount() {
           gold_weight_grams: input.gold_weight_grams ?? null,
           gold_purchase_price_per_gram: input.gold_purchase_price_per_gram ?? null,
           invested_amount: input.invested_amount ?? null,
+          commitment_limit: input.commitment_limit ?? null,
         })
         .select()
         .single();
@@ -144,6 +145,7 @@ export function useCreateAccount() {
         gold_weight_grams: input.gold_weight_grams ?? null,
         gold_purchase_price_per_gram: input.gold_purchase_price_per_gram ?? null,
         invested_amount: input.invested_amount ?? null,
+        commitment_limit: input.commitment_limit ?? null,
         is_deleted: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -189,7 +191,7 @@ export function useUpdateAccount() {
     mutationFn: async ({
       id,
       ...updates
-    }: { id: string } & Partial<Pick<Account, 'name' | 'type' | 'balance' | 'credit_limit' | 'due_date' | 'target_amount' | 'gold_brand' | 'gold_weight_grams' | 'gold_purchase_price_per_gram' | 'invested_amount'>>) => {
+    }: { id: string } & Partial<Pick<Account, 'name' | 'type' | 'balance' | 'credit_limit' | 'due_date' | 'target_amount' | 'gold_brand' | 'gold_weight_grams' | 'gold_purchase_price_per_gram' | 'invested_amount' | 'commitment_limit'>>) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('accounts')

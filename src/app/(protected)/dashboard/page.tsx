@@ -14,6 +14,7 @@ import BudgetProgressSection from '@/components/dashboard/BudgetProgressSection'
 import SavingsProgressSection from '@/components/dashboard/SavingsProgressSection';
 import GoalsProgressSection from '@/components/dashboard/GoalsProgressSection';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
+import CommitmentSummarySection from '@/components/dashboard/CommitmentSummarySection';
 import { useNetWorth } from '@/hooks/useNetWorth';
 import { partitionAccounts } from '@/lib/accountClassifier';
 import type { Account } from '@/types';
@@ -149,6 +150,11 @@ export default function DashboardPage() {
           <GoalsProgressSection />
           <RecentTransactions />
         </div>
+      )}
+
+      {/* Commitment Summary */}
+      {!isLoading && (
+        <CommitmentSummarySection accounts={accounts} />
       )}
 
       {/* FAB */}

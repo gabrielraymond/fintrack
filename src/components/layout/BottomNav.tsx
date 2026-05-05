@@ -82,6 +82,17 @@ function MoreIcon({ className }: { className?: string }) {
   );
 }
 
+function CommitmentIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <path d="M2 10h20" />
+      <path d="M7 15h2" />
+      <path d="M11 15h4" />
+    </svg>
+  );
+}
+
 /* ── Nav config ──────────────────────────────────────────── */
 
 const primaryItems = [
@@ -93,6 +104,7 @@ const primaryItems = [
 
 const moreItems = [
   { label: 'Goals', href: '/goals', icon: GoalIcon },
+  { label: 'Cicilan', href: '/commitments', icon: CommitmentIcon },
   { label: 'Laporan', href: '/reports', icon: ReportIcon },
   { label: 'Pengaturan', href: '/settings', icon: SettingsIcon },
 ];

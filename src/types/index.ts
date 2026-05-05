@@ -10,7 +10,13 @@ export type TransactionType = 'income' | 'expense' | 'transfer';
 
 export type BudgetStatus = 'green' | 'yellow' | 'red';
 
-export type NotificationType = 'budget_alert' | 'cc_reminder' | 'large_transaction' | 'goal_milestone';
+export type NotificationType = 'budget_alert' | 'cc_reminder' | 'large_transaction' | 'goal_milestone' | 'payment_due_today' | 'commitment_alert';
+
+export type InstallmentType = 'cc' | 'non_cc';
+
+export type InstallmentStatus = 'active' | 'completed';
+
+export type PaymentLogStatus = 'paid' | 'unpaid';
 
 export type GoalCategory = 'tabungan' | 'dana_darurat' | 'liburan' | 'pendidikan' | 'pelunasan_hutang' | 'lainnya';
 
@@ -33,6 +39,7 @@ export interface Account {
   gold_weight_grams: number | null;
   gold_purchase_price_per_gram: number | null;
   invested_amount: number | null;
+  commitment_limit: number | null;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -138,6 +145,48 @@ export interface Notification {
 }
 
 // ============================================================
+// Installment & Commitment Tracker Interfaces
+// ============================================================
+
+export interface Installment {
+  id: string;
+  user_id: string;
+  account_id: string;
+  name: string;
+  installment_type: InstallmentType;
+  monthly_amount: number;
+  tenor_months: number;
+  start_date: string;
+  due_day: number;
+  note: string | null;
+  status: InstallmentStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RecurringCommitment {
+  id: string;
+  user_id: string;
+  account_id: string;
+  name: string;
+  monthly_amount: number;
+  is_active: boolean;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InstallmentPaymentLog {
+  id: string;
+  installment_id: string;
+  user_id: string;
+  payment_month: string; // format: YYYY-MM-01
+  status: PaymentLogStatus;
+  confirmed_at: string | null;
+  created_at: string;
+}
+
+// ============================================================
 // Transaction Modal State Machine
 // ============================================================
 
@@ -181,6 +230,7 @@ export interface AccountFormInput {
   gold_weight_grams?: number;
   gold_purchase_price_per_gram?: number;
   invested_amount?: number;
+  commitment_limit?: number;
 }
 
 export interface TransactionFormInput {
@@ -231,6 +281,23 @@ export interface ContributionFormInput {
   amount: number;
   note?: string;
   account_id: string;
+}
+
+export interface InstallmentFormInput {
+  account_id: string;
+  name: string;
+  monthly_amount: number;
+  tenor_months: number;
+  start_date: string;
+  due_day: number;
+  note?: string;
+}
+
+export interface RecurringCommitmentFormInput {
+  account_id: string;
+  name: string;
+  monthly_amount: number;
+  note?: string;
 }
 
 // ============================================================

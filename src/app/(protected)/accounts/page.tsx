@@ -15,6 +15,7 @@ import {
   useUpdateAccount,
   useSoftDeleteAccount,
 } from '@/hooks/useAccounts';
+import { useCommitmentLimits } from '@/hooks/useCommitmentLimits';
 import { partitionAccounts } from '@/lib/accountClassifier';
 import type { Account, AccountType, GoldBrand } from '@/types';
 
@@ -40,6 +41,8 @@ export default function AccountsPage() {
   const totalCount = data?.count ?? 0;
   const totalPages = Math.ceil(totalCount / 20);
 
+  const { data: limitData } = useCommitmentLimits(accounts);
+
   const { operational: regularAccounts, savings: savingsAccounts } = useMemo(
     () => partitionAccounts(accounts),
     [accounts],
@@ -56,6 +59,7 @@ export default function AccountsPage() {
     gold_weight_grams?: number;
     gold_purchase_price_per_gram?: number;
     invested_amount?: number;
+    commitment_limit?: number;
   }) => {
     createAccount.mutate(formData, {
       onSuccess: () => setFormOpen(false),
@@ -73,6 +77,7 @@ export default function AccountsPage() {
     gold_weight_grams?: number;
     gold_purchase_price_per_gram?: number;
     invested_amount?: number;
+    commitment_limit?: number;
   }) => {
     if (!editingAccount) return;
     updateAccount.mutate(
@@ -88,6 +93,7 @@ export default function AccountsPage() {
         gold_weight_grams: formData.gold_weight_grams ?? null,
         gold_purchase_price_per_gram: formData.gold_purchase_price_per_gram ?? null,
         invested_amount: formData.invested_amount ?? null,
+        commitment_limit: formData.commitment_limit ?? null,
       },
       { onSuccess: () => setEditingAccount(null) },
     );
@@ -148,6 +154,7 @@ export default function AccountsPage() {
                   account={account}
                   onEdit={(a) => setEditingAccount(a)}
                   onDelete={(a) => setDeleteTarget(a)}
+                  limitData={limitData[account.id]}
                 />
               ))}
             </div>
@@ -166,6 +173,7 @@ export default function AccountsPage() {
                     account={account}
                     onEdit={(a) => setEditingAccount(a)}
                     onDelete={(a) => setDeleteTarget(a)}
+                    limitData={limitData[account.id]}
                   />
                 ))}
               </div>

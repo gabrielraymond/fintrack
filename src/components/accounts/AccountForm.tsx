@@ -20,6 +20,7 @@ export interface AccountFormProps {
     gold_weight_grams?: number;
     gold_purchase_price_per_gram?: number;
     invested_amount?: number;
+    commitment_limit?: number;
   }) => void;
   loading?: boolean;
   /** Pass an account to edit; omit for create mode */
@@ -45,6 +46,7 @@ export default function AccountForm({
   const [goldWeight, setGoldWeight] = useState('');
   const [goldPurchasePrice, setGoldPurchasePrice] = useState('');
   const [investedAmount, setInvestedAmount] = useState('');
+  const [commitmentLimit, setCommitmentLimit] = useState('');
 
   useEffect(() => {
     if (account) {
@@ -58,6 +60,7 @@ export default function AccountForm({
       setGoldWeight(account.gold_weight_grams !== null ? String(account.gold_weight_grams) : '');
       setGoldPurchasePrice(account.gold_purchase_price_per_gram !== null ? String(account.gold_purchase_price_per_gram) : '');
       setInvestedAmount(account.invested_amount !== null ? String(account.invested_amount) : '');
+      setCommitmentLimit(account.commitment_limit !== null ? String(account.commitment_limit) : '');
     } else {
       setName('');
       setType('bank');
@@ -69,6 +72,7 @@ export default function AccountForm({
       setGoldWeight('');
       setGoldPurchasePrice('');
       setInvestedAmount('');
+      setCommitmentLimit('');
     }
   }, [account, open]);
 
@@ -76,6 +80,7 @@ export default function AccountForm({
   const isSavingsType = type === 'tabungan' || type === 'dana_darurat';
   const isGold = type === 'gold';
   const isInvestment = type === 'investment';
+  const isCommitmentLimitApplicable = !isCreditCard;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +105,10 @@ export default function AccountForm({
       const parsedAmount = Number(investedAmount);
       if (parsedAmount < 0) return;
       data.invested_amount = parsedAmount;
+    }
+    if (isCommitmentLimitApplicable && commitmentLimit) {
+      const parsedLimit = Number(commitmentLimit);
+      if (parsedLimit > 0) data.commitment_limit = parsedLimit;
     }
     onSubmit(data);
   };
@@ -294,6 +303,27 @@ export default function AccountForm({
             />
             <p className="text-caption text-text-muted mt-1">
               Total modal yang telah disetor ke platform
+            </p>
+          </div>
+        )}
+
+        {/* Commitment Limit — only for non-credit-card accounts */}
+        {isCommitmentLimitApplicable && (
+          <div>
+            <label htmlFor="commitment-limit" className="block text-caption text-text-secondary mb-1">
+              Batas Komitmen (IDR) <span className="text-text-muted">(opsional)</span>
+            </label>
+            <input
+              id="commitment-limit"
+              type="number"
+              min={0}
+              value={commitmentLimit}
+              onChange={(e) => setCommitmentLimit(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg text-body text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="0"
+            />
+            <p className="text-caption text-text-muted mt-1">
+              Batas yang digunakan untuk menghitung limit efektif cicilan
             </p>
           </div>
         )}

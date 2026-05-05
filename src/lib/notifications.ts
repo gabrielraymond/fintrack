@@ -181,3 +181,87 @@ export async function evaluateLargeTransaction(
   const dedupKey = `large_tx:${Date.now()}`;
   await createNotificationIfNotExists(userId, 'large_transaction', message, dedupKey);
 }
+
+/**
+ * Evaluates commitment alerts for all accounts.
+ * Creates a `commitment_alert` notification when Prediksi_Limit_Tagihan < 10% of official limit,
+ * or when it goes negative.
+ * Requirements: 8.1, 8.2, 8.3
+ */
+export async function evaluateCommitmentAlerts(
+  userId: string,
+  accounts: Account[],
+  installments: import('@/types').Installment[],
+  commitments: import('@/types').RecurringCommitment[]
+): Promise<void> {
+  const { calculateTotalMonthlyObligation, calculateProjectedEffectiveLimit } = await import('@/lib/limitCalculations');
+
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+  for (const account of accounts) {
+    const accountInstallments = installments.filter(
+      (i) => i.account_id === account.id && i.status === 'active'
+    );
+    const accountCommitments = commitments.filter(
+      (c) => c.account_id === account.id && c.is_active
+    );
+
+    const officialLimit =
+      account.type === 'credit_card' ? account.credit_limit : account.commitment_limit;
+
+    if (officialLimit == null || officialLimit <= 0) continue;
+
+    const totalMonthly = calculateTotalMonthlyObligation(accountInstallments, accountCommitments);
+    const projected = calculateProjectedEffectiveLimit(officialLimit, totalMonthly);
+
+    const dedupKey = `commitment_alert:${account.id}:${dateStr}`;
+
+    if (projected < 0) {
+      const message = `Peringatan: Kewajiban bulanan akun ${account.name} telah melebihi limit (${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Math.abs(projected))} melebihi limit).`;
+      await createNotificationIfNotExists(userId, 'commitment_alert', message, dedupKey);
+    } else if (projected < officialLimit * 0.1) {
+      const message = `Peringatan: Limit efektif akun ${account.name} hampir habis. Sisa prediksi: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(projected)}.`;
+      await createNotificationIfNotExists(userId, 'commitment_alert', message, dedupKey);
+    }
+  }
+}
+
+/**
+ * Evaluates payment due today notifications for all active installments.
+ * Creates a `payment_due_today` notification when due_day == today's date.
+ * Requirements: 8.4, 8.5, 8.6, 8.7
+ */
+export async function evaluatePaymentDueToday(
+  userId: string,
+  installments: import('@/types').Installment[],
+  accountMap: Record<string, Account>,
+  today: Date
+): Promise<void> {
+  const currentDay = today.getDate();
+  const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+  for (const installment of installments) {
+    if (installment.status !== 'active') continue;
+    if (installment.due_day !== currentDay) continue;
+
+    const account = accountMap[installment.account_id];
+    const accountName = account?.name ?? 'akun';
+
+    const formattedAmount = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(installment.monthly_amount);
+
+    let message: string;
+    if (installment.installment_type === 'cc') {
+      message = `Hari ini limit ${accountName} akan terpotong sebesar ${formattedAmount} untuk cicilan ${installment.name}.`;
+    } else {
+      message = `Hari ini adalah hari pembayaran cicilan ${installment.name} sebesar ${formattedAmount} — jangan lupa bayar!`;
+    }
+
+    const dedupKey = `payment_due_today:${installment.id}:${dateStr}`;
+    await createNotificationIfNotExists(userId, 'payment_due_today', message, dedupKey);
+  }
+}
