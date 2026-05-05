@@ -144,7 +144,7 @@ export function useCreateInstallment() {
       return data as Installment;
     },
 
-    onError: (_err, _input, _context) => {
+    onError: (_err, _input) => {
       showError('Gagal membuat cicilan. Silakan coba lagi.', () => {
         mutation.mutate(_input);
       });
@@ -185,7 +185,7 @@ export function useUpdateInstallment() {
       return data as Installment;
     },
 
-    onError: (_err, variables, _context) => {
+    onError: (_err, variables) => {
       showError('Gagal memperbarui cicilan. Silakan coba lagi.', () => {
         mutation.mutate(variables);
       });
@@ -220,7 +220,7 @@ export function useDeleteInstallment() {
       if (error) throw error;
     },
 
-    onError: (_err, installmentId, _context) => {
+    onError: (_err, installmentId) => {
       showError('Gagal menghapus cicilan. Silakan coba lagi.', () => {
         mutation.mutate(installmentId);
       });
@@ -272,7 +272,7 @@ export function useConfirmPayment() {
       return data as InstallmentPaymentLog;
     },
 
-    onError: (_err, variables, _context) => {
+    onError: (_err, variables) => {
       showError('Gagal mengkonfirmasi pembayaran. Silakan coba lagi.', () => {
         mutation.mutate(variables);
       });

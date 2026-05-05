@@ -103,7 +103,7 @@ export function useCreateCommitment() {
       return data as RecurringCommitment;
     },
 
-    onError: (_err, _input, _context) => {
+    onError: (_err, _input) => {
       showError('Gagal membuat komitmen berulang. Silakan coba lagi.', () => {
         mutation.mutate(_input);
       });
@@ -144,7 +144,7 @@ export function useUpdateCommitment() {
       return data as RecurringCommitment;
     },
 
-    onError: (_err, variables, _context) => {
+    onError: (_err, variables) => {
       showError('Gagal memperbarui komitmen berulang. Silakan coba lagi.', () => {
         mutation.mutate(variables);
       });
@@ -179,7 +179,7 @@ export function useDeleteCommitment() {
       if (error) throw error;
     },
 
-    onError: (_err, commitmentId, _context) => {
+    onError: (_err, commitmentId) => {
       showError('Gagal menghapus komitmen berulang. Silakan coba lagi.', () => {
         mutation.mutate(commitmentId);
       });
@@ -223,7 +223,7 @@ export function useToggleCommitmentActive() {
       return data as RecurringCommitment;
     },
 
-    onError: (_err, variables, _context) => {
+    onError: (_err, variables) => {
       showError('Gagal mengubah status komitmen. Silakan coba lagi.', () => {
         mutation.mutate(variables);
       });

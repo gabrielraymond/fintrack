@@ -58,7 +58,7 @@ function CommitmentsPageInner() {
 
   // ── Data fetching ──────────────────────────────────────────
   const { data: accountsData, isLoading: accountsLoading } = useAccounts();
-  const accounts = accountsData?.data ?? [];
+  const accounts = useMemo(() => accountsData?.data ?? [], [accountsData?.data]);
 
   const { data: installments = [], isLoading: installmentsLoading } = useActiveInstallments();
   const { data: allCommitments = [], isLoading: commitmentsLoading } = useAllCommitments();

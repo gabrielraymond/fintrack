@@ -16,6 +16,9 @@ import GoalsProgressSection from '@/components/dashboard/GoalsProgressSection';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
 import CommitmentSummarySection from '@/components/dashboard/CommitmentSummarySection';
 import { useNetWorth } from '@/hooks/useNetWorth';
+import { useActiveInstallments } from '@/hooks/useInstallments';
+import { useActiveCommitments } from '@/hooks/useRecurringCommitments';
+import { calculateTotalMonthlyObligation, calculateProjectedEffectiveLimit } from '@/lib/limitCalculations';
 import { partitionAccounts } from '@/lib/accountClassifier';
 import type { Account } from '@/types';
 
@@ -74,6 +77,27 @@ export default function DashboardPage() {
 
   const { operational, savings } = useMemo(() => partitionAccounts(accounts), [accounts]);
 
+  // Installment data for NetWorthCard
+  const { data: installments = [] } = useActiveInstallments();
+  const { data: commitments = [] } = useActiveCommitments();
+
+  const { totalInstallment, ccAfterBill } = useMemo(() => {
+    const total = calculateTotalMonthlyObligation(installments, commitments);
+    // Find CC accounts and calculate projected limit
+    const ccAccounts = accounts.filter((a) => a.type === 'credit_card' && a.credit_limit != null);
+    let projected: number | null = null;
+    if (ccAccounts.length > 0) {
+      // Sum projected limits across all CC accounts
+      projected = ccAccounts.reduce((sum, cc) => {
+        const ccInstallments = installments.filter((i) => i.account_id === cc.id);
+        const ccCommitments = commitments.filter((c) => c.account_id === cc.id);
+        const ccObligation = calculateTotalMonthlyObligation(ccInstallments, ccCommitments);
+        return sum + calculateProjectedEffectiveLimit(cc.credit_limit!, ccObligation, cc.balance);
+      }, 0);
+    }
+    return { totalInstallment: total, ccAfterBill: projected };
+  }, [accounts, installments, commitments]);
+
   const isLoading = accountsLoading || txLoading;
   const hasError = accountsError || txError;
 
@@ -110,7 +134,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-3">
-          <NetWorthCard total={breakdown.total} operational={breakdown.operational} savings={breakdown.savings} cash={breakdown.cash} creditCardDebt={breakdown.creditCardDebt} />
+          <NetWorthCard total={breakdown.total} operational={breakdown.operational} savings={breakdown.savings} cash={breakdown.cash} creditCardDebt={breakdown.creditCardDebt} ccAfterBill={ccAfterBill} totalInstallment={totalInstallment} />
           <MonthlySummaryCard />
         </div>
       )}

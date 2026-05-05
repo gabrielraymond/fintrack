@@ -164,14 +164,63 @@ export function calculateCurrentEffectiveLimitNonCC(
 
 /**
  * Calculates Prediksi_Limit_Tagihan (projected effective limit).
- * = limit - total_monthly_obligation
  *
- * Property 8: Prediksi_Limit_Tagihan = Limit - Total_Kewajiban_Bulanan
+ * For credit cards (when balance is provided):
+ *   = balance - total_monthly_obligation
+ *   Balance for CC represents the current available limit (positive value).
+ *   We subtract all obligations for this month to show what the limit will be
+ *   after the statement date.
+ *
+ * For non-CC accounts (balance not provided):
+ *   = limit - total_monthly_obligation (legacy behavior)
+ *
+ * Property 8: Prediksi_Limit_Tagihan
  * Requirements: 3.3, 3.5
  */
 export function calculateProjectedEffectiveLimit(
   limit: number,
-  totalMonthlyObligation: number
+  totalMonthlyObligation: number,
+  balance?: number
 ): number {
+  if (balance !== undefined) {
+    // balance = current available limit for CC
+    // Subtract all monthly obligations to predict limit after statement
+    return balance - totalMonthlyObligation;
+  }
   return limit - totalMonthlyObligation;
+}
+
+/**
+ * Calculates the total obligation amount that has NOT yet been deducted this month
+ * for a credit card account.
+ *
+ * CC installments: not deducted if today < due_day
+ * Recurring commitments: treated as not yet deducted (conservative approach,
+ * since they don't have a due_day field)
+ *
+ * Requirements: 3.3
+ */
+export function calculateNotYetDeductedObligationCC(
+  installments: Installment[],
+  commitments: RecurringCommitment[],
+  today: Date
+): number {
+  const notYetDeductedInstallments = installments
+    .filter(
+      (i) =>
+        i.status === 'active' &&
+        i.installment_type === 'cc' &&
+        !isInstallmentDeducted(today, i.due_day)
+    )
+    .reduce((sum, i) => sum + i.monthly_amount, 0);
+
+  // Recurring commitments don't have due_day — we assume they are NOT yet
+  // reflected in the balance (conservative: shows lower predicted limit)
+  // If they ARE already in the balance, the user will see a more pessimistic number
+  // which is safer than being overly optimistic.
+  // NOTE: We do NOT add commitments here because they are already counted
+  // in currentEffectiveLimit calculation and reflected in spending behavior.
+  // The user's concern is specifically about installments reducing their limit.
+
+  return notYetDeductedInstallments;
 }

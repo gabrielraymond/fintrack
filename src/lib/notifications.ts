@@ -213,7 +213,13 @@ export async function evaluateCommitmentAlerts(
     if (officialLimit == null || officialLimit <= 0) continue;
 
     const totalMonthly = calculateTotalMonthlyObligation(accountInstallments, accountCommitments);
-    const projected = calculateProjectedEffectiveLimit(officialLimit, totalMonthly);
+
+    let projected: number;
+    if (account.type === 'credit_card') {
+      projected = calculateProjectedEffectiveLimit(officialLimit, totalMonthly, account.balance);
+    } else {
+      projected = calculateProjectedEffectiveLimit(officialLimit, totalMonthly);
+    }
 
     const dedupKey = `commitment_alert:${account.id}:${dateStr}`;
 

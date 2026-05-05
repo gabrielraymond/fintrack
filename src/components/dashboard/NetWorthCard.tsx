@@ -10,11 +10,16 @@ export interface NetWorthCardProps {
   savings: number;
   cash: number;
   creditCardDebt: number;
+  /** Prediksi sisa limit CC setelah cicilan dipotong */
+  ccAfterBill?: number | null;
+  /** Total cicilan bulanan */
+  totalInstallment?: number;
 }
 
-export default function NetWorthCard({ total, operational, savings, cash, creditCardDebt }: NetWorthCardProps) {
+export default function NetWorthCard({ total, operational, savings, cash, creditCardDebt, ccAfterBill, totalInstallment }: NetWorthCardProps) {
   const formatIDR = useFormatIDR();
   const hasCC = creditCardDebt !== 0;
+  const showInstallmentInfo = (ccAfterBill != null && ccAfterBill !== 0) || (totalInstallment != null && totalInstallment > 0);
 
   return (
     <Card className="!p-3">
@@ -52,6 +57,22 @@ export default function NetWorthCard({ total, operational, savings, cash, credit
           </p>
         </div>
       </div>
+
+      {/* CC after bill & total installment */}
+      {showInstallmentInfo && (
+        <div className="mt-2 pt-2 border-t border-border flex gap-3">
+          {totalInstallment != null && totalInstallment > 0 && (
+            <span className="text-[10px] text-text-muted">
+              Cicilan/bln: <span className="text-text-secondary font-medium">{formatIDR(totalInstallment)}</span>
+            </span>
+          )}
+          {ccAfterBill != null && (
+            <span className="text-[10px] text-text-muted">
+              CC stlh tagihan: <span className={`font-medium ${ccAfterBill < 0 ? 'text-danger' : 'text-text-secondary'}`}>{formatIDR(ccAfterBill)}</span>
+            </span>
+          )}
+        </div>
+      )}
     </Card>
   );
 }

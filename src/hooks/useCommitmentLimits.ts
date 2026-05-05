@@ -72,9 +72,11 @@ export function useCommitmentLimits(accounts: Account[]): {
           accountCommitments,
           today
         );
+        // Prediksi = balance (sisa limit saat ini) - total kewajiban bulanan
         projectedEffectiveLimit = calculateProjectedEffectiveLimit(
           account.credit_limit,
-          totalMonthlyObligation
+          totalMonthlyObligation,
+          account.balance
         );
       } else if (account.type !== 'credit_card' && account.commitment_limit != null) {
         currentEffectiveLimit = calculateCurrentEffectiveLimitNonCC(

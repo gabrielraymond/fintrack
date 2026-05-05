@@ -52,7 +52,11 @@ export default function CommitmentSummarySection({ accounts }: CommitmentSummary
       const accountInstallments = installments.filter((i) => i.account_id === account.id);
       const accountCommitments = commitments.filter((c) => c.account_id === account.id);
       const totalObligation = calculateTotalMonthlyObligation(accountInstallments, accountCommitments);
-      const projected = calculateProjectedEffectiveLimit(account.credit_limit!, totalObligation);
+      const projected = calculateProjectedEffectiveLimit(
+        account.credit_limit!,
+        totalObligation,
+        account.balance
+      );
       return { account, totalObligation, projected };
     });
   }, [ccAccountsWithLimit, installments, commitments]);
@@ -101,7 +105,7 @@ export default function CommitmentSummarySection({ accounts }: CommitmentSummary
             return (
               <div key={account.id} className="flex items-center justify-between">
                 <span className="text-[11px] text-text-secondary truncate max-w-[55%]">
-                  {account.name} — Prediksi Limit
+                  {account.name} — Prediksi Sisa Limit
                 </span>
                 <span
                   className={`text-[11px] font-semibold shrink-0 ${
