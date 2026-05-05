@@ -52,17 +52,47 @@ export function getCycleRange(
 
 /**
  * Menentukan bulan anggaran (budget month) berdasarkan cycle range.
- * Budget month = tanggal 1 dari bulan di mana siklus dimulai.
- * Contoh: cycle start "2024-01-25" → budget month "2024-01-01"
+ *
+ * Logika: label bulan = bulan dimana mayoritas hari dalam siklus jatuh.
+ * - Jika cutoff > 15: mayoritas hari ada di bulan berikutnya dari start,
+ *   jadi budget month = bulan berikutnya.
+ * - Jika cutoff <= 15: mayoritas hari ada di bulan yang sama dengan start,
+ *   jadi budget month = bulan start.
+ *
+ * Karena kita tidak menerima cutoffDate sebagai parameter, kita tentukan
+ * dari tanggal start: jika day-of-month start > 15, maka bulan berikutnya.
+ *
+ * Contoh:
+ * - cycle start "2025-04-25" → budget month "2025-05-01" (Mei)
+ * - cycle start "2025-05-10" → budget month "2025-05-01" (Mei)
+ * - cycle start "2025-05-01" → budget month "2025-05-01" (Mei)
  */
 export function getCycleBudgetMonth(cycleRange: CycleRange): string {
-  const [year, month] = cycleRange.start.split('-');
-  return `${year}-${month}-01`;
+  const [yearStr, monthStr, dayStr] = cycleRange.start.split('-');
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10); // 1-indexed
+  const day = parseInt(dayStr, 10);
+
+  if (day > 15) {
+    // Majority of days fall in the next month
+    if (month === 12) {
+      return `${year + 1}-01-01`;
+    }
+    return `${year}-${String(month + 1).padStart(2, '0')}-01`;
+  }
+
+  return `${yearStr}-${monthStr}-01`;
 }
 
 /**
  * Menghitung cycle range untuk bulan anggaran tertentu.
  * Kebalikan dari getCycleBudgetMonth — dari budget month ke cycle range.
+ *
+ * Logika:
+ * - Jika cutoff <= 15: start = cutoffDate di bulan yang sama dengan budgetMonth
+ * - Jika cutoff > 15: start = cutoffDate di bulan SEBELUMNYA dari budgetMonth
+ *   (karena getCycleBudgetMonth menggeser label ke bulan berikutnya)
+ * - Jika cutoff === 1: start = tanggal 1 bulan budgetMonth (standar)
  *
  * @param budgetMonth - Format "YYYY-MM-01" atau "YYYY-MM"
  * @param cutoffDate - Integer 1-28
@@ -83,6 +113,16 @@ export function getCycleRangeForMonth(
     return { start, end };
   }
 
+  if (cutoffDate > 15) {
+    // Budget month is the month AFTER start, so start is in previous month
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+    const start = formatDate(prevYear, prevMonth, cutoffDate);
+    const end = formatDate(year, month, cutoffDate);
+    return { start, end };
+  }
+
+  // cutoff <= 15: start is in the same month as budgetMonth
   const start = formatDate(year, month, cutoffDate);
   const nextMonth = month === 11 ? 0 : month + 1;
   const nextYear = month === 11 ? year + 1 : year;

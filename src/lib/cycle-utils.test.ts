@@ -98,16 +98,27 @@ describe('getCycleRange', () => {
 });
 
 describe('getCycleBudgetMonth', () => {
-  it('extracts budget month from cycle start date', () => {
-    expect(getCycleBudgetMonth({ start: '2024-01-25', end: '2024-02-25' })).toBe('2024-01-01');
+  it('cutoff>15: labels as next month (majority of days)', () => {
+    // start "2024-01-25" → day 25 > 15 → budget month = Feb
+    expect(getCycleBudgetMonth({ start: '2024-01-25', end: '2024-02-25' })).toBe('2024-02-01');
+  });
+
+  it('cutoff<=15: labels as same month', () => {
+    // start "2024-03-10" → day 10 <= 15 → budget month = Mar
+    expect(getCycleBudgetMonth({ start: '2024-03-10', end: '2024-04-10' })).toBe('2024-03-01');
   });
 
   it('works for cutoff=1 cycle', () => {
     expect(getCycleBudgetMonth({ start: '2024-03-01', end: '2024-04-01' })).toBe('2024-03-01');
   });
 
-  it('works for December cycle', () => {
-    expect(getCycleBudgetMonth({ start: '2024-12-25', end: '2025-01-25' })).toBe('2024-12-01');
+  it('handles year boundary — December start with cutoff>15', () => {
+    // start "2024-12-25" → day 25 > 15 → budget month = Jan 2025
+    expect(getCycleBudgetMonth({ start: '2024-12-25', end: '2025-01-25' })).toBe('2025-01-01');
+  });
+
+  it('cutoff=15: labels as same month (day <= 15)', () => {
+    expect(getCycleBudgetMonth({ start: '2024-06-15', end: '2024-07-15' })).toBe('2024-06-01');
   });
 });
 
@@ -119,22 +130,23 @@ describe('getCycleRangeForMonth', () => {
     });
   });
 
-  it('cutoff=25, budget month 2024-01-01 → 25 Jan - 25 Feb', () => {
-    expect(getCycleRangeForMonth('2024-01-01', 25)).toEqual({
+  it('cutoff=25 (>15), budget month 2024-02-01 → 25 Jan - 25 Feb', () => {
+    // Budget month is Feb, but cutoff>15 means start is in previous month (Jan)
+    expect(getCycleRangeForMonth('2024-02-01', 25)).toEqual({
       start: '2024-01-25',
       end: '2024-02-25',
     });
   });
 
-  it('cutoff=10, budget month 2024-06-01 → 10 Jun - 10 Jul', () => {
+  it('cutoff=10 (<=15), budget month 2024-06-01 → 10 Jun - 10 Jul', () => {
     expect(getCycleRangeForMonth('2024-06-01', 10)).toEqual({
       start: '2024-06-10',
       end: '2024-07-10',
     });
   });
 
-  it('handles year boundary — cutoff=25, budget month 2024-12-01', () => {
-    expect(getCycleRangeForMonth('2024-12-01', 25)).toEqual({
+  it('handles year boundary — cutoff=25, budget month 2025-01-01 → 25 Dec 2024 - 25 Jan 2025', () => {
+    expect(getCycleRangeForMonth('2025-01-01', 25)).toEqual({
       start: '2024-12-25',
       end: '2025-01-25',
     });
@@ -145,6 +157,24 @@ describe('getCycleRangeForMonth', () => {
       start: '2024-06-10',
       end: '2024-07-10',
     });
+  });
+
+  it('round-trip: getCycleBudgetMonth(getCycleRangeForMonth(m, c)) === m for cutoff>15', () => {
+    const budgetMonth = '2024-05-01';
+    const range = getCycleRangeForMonth(budgetMonth, 25);
+    expect(getCycleBudgetMonth(range)).toBe(budgetMonth);
+  });
+
+  it('round-trip: getCycleBudgetMonth(getCycleRangeForMonth(m, c)) === m for cutoff<=15', () => {
+    const budgetMonth = '2024-05-01';
+    const range = getCycleRangeForMonth(budgetMonth, 10);
+    expect(getCycleBudgetMonth(range)).toBe(budgetMonth);
+  });
+
+  it('round-trip: getCycleBudgetMonth(getCycleRangeForMonth(m, c)) === m for cutoff=1', () => {
+    const budgetMonth = '2024-05-01';
+    const range = getCycleRangeForMonth(budgetMonth, 1);
+    expect(getCycleBudgetMonth(range)).toBe(budgetMonth);
   });
 });
 
