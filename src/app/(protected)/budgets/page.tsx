@@ -5,9 +5,9 @@ import Button from '@/components/ui/Button';
 import SkeletonLoader from '@/components/ui/SkeletonLoader';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
-import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import BudgetCard from '@/components/budgets/BudgetCard';
 import BudgetForm from '@/components/budgets/BudgetForm';
+import DeleteBudgetDialog from '@/components/budgets/DeleteBudgetDialog';
 import BudgetHealthIndicator from '@/components/budgets/BudgetHealthIndicator';
 import {
   useBudgets,
@@ -122,11 +122,20 @@ export default function BudgetsPage() {
     );
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteThisMonth = () => {
     if (!deleteTarget) return;
-    deleteBudget.mutate(deleteTarget.id, {
-      onSuccess: () => setDeleteTarget(null),
-    });
+    deleteBudget.mutate(
+      { budgetId: deleteTarget.id, categoryId: deleteTarget.category_id, stopRecurring: false },
+      { onSuccess: () => setDeleteTarget(null) },
+    );
+  };
+
+  const handleDeleteAndStopRecurring = () => {
+    if (!deleteTarget) return;
+    deleteBudget.mutate(
+      { budgetId: deleteTarget.id, categoryId: deleteTarget.category_id, stopRecurring: true },
+      { onSuccess: () => setDeleteTarget(null) },
+    );
   };
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -261,13 +270,12 @@ export default function BudgetsPage() {
       />
 
       {/* Delete confirmation */}
-      <ConfirmationDialog
+      <DeleteBudgetDialog
         open={!!deleteTarget}
-        title="Hapus Anggaran"
-        description={`Apakah Anda yakin ingin menghapus anggaran untuk "${deleteTarget?.category?.name ?? 'kategori ini'}"?`}
-        confirmLabel="Hapus"
-        cancelLabel="Batal"
-        onConfirm={handleDeleteConfirm}
+        budget={deleteTarget}
+        loading={deleteBudget.isPending}
+        onDeleteThisMonth={handleDeleteThisMonth}
+        onDeleteAndStopRecurring={handleDeleteAndStopRecurring}
         onCancel={() => setDeleteTarget(null)}
       />
     </div>

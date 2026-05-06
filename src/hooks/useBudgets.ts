@@ -242,6 +242,9 @@ export function useUpdateBudget() {
 
 /**
  * Deletes a budget.
+ * When stopRecurring is true, also sets is_recurring=false on all previous
+ * recurring budgets for the same category so the carry-over logic won't
+ * recreate it in future months.
  * Requirements: 9.1
  */
 export function useDeleteBudget() {
@@ -250,8 +253,31 @@ export function useDeleteBudget() {
   const { showError } = useToast();
 
   const mutation = useMutation({
-    mutationFn: async (budgetId: string) => {
+    mutationFn: async ({
+      budgetId,
+      categoryId,
+      stopRecurring = false,
+    }: {
+      budgetId: string;
+      categoryId?: string;
+      stopRecurring?: boolean;
+    }) => {
       const supabase = createClient();
+
+      // If user wants to stop recurring, disable it on all previous budgets
+      // for this category so carry-over won't recreate it next month.
+      if (stopRecurring && categoryId) {
+        const { error: updateError } = await supabase
+          .from('budgets')
+          .update({ is_recurring: false, updated_at: new Date().toISOString() })
+          .eq('user_id', user!.id)
+          .eq('category_id', categoryId)
+          .eq('is_recurring', true)
+          .neq('id', budgetId); // exclude the budget being deleted
+
+        if (updateError) throw updateError;
+      }
+
       const { error } = await supabase
         .from('budgets')
         .delete()
@@ -262,9 +288,9 @@ export function useDeleteBudget() {
       return budgetId;
     },
 
-    onError: (_err, budgetId) => {
+    onError: (_err, variables) => {
       showError('Gagal menghapus anggaran. Silakan coba lagi.', () => {
-        mutation.mutate(budgetId);
+        mutation.mutate(variables);
       });
     },
 
