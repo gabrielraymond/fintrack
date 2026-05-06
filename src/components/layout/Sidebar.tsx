@@ -109,7 +109,7 @@ export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { signOut } = useAuth();
   const router = useRouter();
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
 
   const handleLogout = async () => {
