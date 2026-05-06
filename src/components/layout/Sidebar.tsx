@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { useTheme } from '@/providers/ThemeProvider';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const navItems = [
@@ -107,6 +109,8 @@ export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { signOut } = useAuth();
   const router = useRouter();
+  const { theme, resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
 
   const handleLogout = async () => {
     await signOut();
@@ -118,8 +122,17 @@ export default function Sidebar({ className }: { className?: string }) {
       className={`w-60 border-r border-border bg-surface flex-col h-screen sticky top-0 ${className ?? ''}`}
       aria-label="Navigasi utama"
     >
-      <div className="px-4 py-6">
-        <h1 className="text-heading text-primary font-bold">FinTrack</h1>
+      <div className="px-4 py-5">
+        <Link href="/dashboard" aria-label="FinTrack — Beranda">
+          <Image
+            src={isDark ? '/icons/logo-dark.svg' : '/icons/logo-light.svg'}
+            alt="FinTrack"
+            width={160}
+            height={40}
+            priority
+            className="h-10 w-auto"
+          />
+        </Link>
       </div>
       <ul className="flex flex-col gap-1 px-2 flex-1">
         {navItems.map((item) => {

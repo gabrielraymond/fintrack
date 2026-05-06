@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   description: "Aplikasi keuangan pribadi untuk pengguna Indonesia",
   manifest: '/manifest.json',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#628141' },
-    { media: '(prefers-color-scheme: dark)', color: '#1E1E1A' },
+    { media: '(prefers-color-scheme: light)', color: '#0D9E75' },
+    { media: '(prefers-color-scheme: dark)', color: '#071829' },
   ],
   appleWebApp: {
     capable: true,
@@ -41,6 +41,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/icons/icon-mark-only.svg', type: 'image/svg+xml' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],

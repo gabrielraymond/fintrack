@@ -9,7 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Background & surface colors
+        // FinTrack brand tokens (static, always available)
+        ft: {
+          navy:       "#0B2340",
+          "navy-light": "#1A3A5C",
+          teal:       "#0D9E75",
+          "teal-light": "#2DD4A0",
+          mint:       "#A7F3D0",
+          surface:    "#EEF6F2",
+          "surface-2": "#D8EFE8",
+          border:     "#C8E6DA",
+          dark:       "#071829",
+          "dark-card": "#0F2A45",
+          "dark-hover": "#1A3A5C",
+          text:       "#0B2340",
+          "text-sub": "#3A7A8A",
+          "text-muted": "#6B9BAA",
+          "text-dark": "#5BBBCC",
+        },
+
+        // Semantic CSS-variable tokens (theme-aware)
         background: "var(--background)",
         foreground: "var(--foreground)",
         surface: {
@@ -18,7 +37,7 @@ const config: Config = {
           elevated: "var(--surface-elevated)",
         },
 
-        // Primary brand color — emerald green
+        // Primary brand color — ft-teal
         primary: {
           DEFAULT: "var(--primary)",
           light: "var(--primary-light)",
@@ -26,7 +45,7 @@ const config: Config = {
           foreground: "var(--primary-foreground)",
         },
 
-        // Secondary accent — teal blue
+        // Secondary accent — ft-navy
         secondary: {
           DEFAULT: "var(--secondary)",
           light: "var(--secondary-light)",
