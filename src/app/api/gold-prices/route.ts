@@ -28,47 +28,65 @@ const FETCH_HEADERS = {
 };
 
 /**
- * Primary source: goldpedia.org
- * Returns both Antam and Galeri24 with sell + buyback prices.
- * Data is server-rendered in HTML table cells.
+ * Primary source for Antam: goldpedia.org homepage table
+ * HTML structure (as of May 2026):
+ *   <td ...><a href="/pasar/antam/">Antam (LM)</a></td>
+ *   <td class="align-right">Rp2,847,100</td>   ← sell
+ *   <td class="align-right">Rp2,645,000</td>   ← buyback
  */
-async function scrapeGoldpedia(): Promise<GoldPriceData[]> {
-  const results: GoldPriceData[] = [];
-
+async function scrapeAntamFromGoldpedia(): Promise<GoldPriceData | null> {
   const res = await fetch('https://www.goldpedia.org/', {
     signal: AbortSignal.timeout(15000),
     headers: FETCH_HEADERS,
   });
-
-  if (!res.ok) return results;
+  if (!res.ok) return null;
   const html = await res.text();
   const now = new Date().toISOString();
 
-  // Antam (LM): <a>Antam (LM)</a></td> <td>Rp2,775,923</td> <td>Rp2,549,000</td>
-  const antamRegex = /Antam\s*\(LM\)<\/a><\/td>\s*<td[^>]*>Rp([\d,]+)<\/td>\s*<td[^>]*>Rp([\d,]+)<\/td>/;
-  const antamMatch = html.match(antamRegex);
-  if (antamMatch) {
-    results.push({
-      brand: 'antam',
-      sellPrice: parsePrice(antamMatch[1]),
-      buybackPrice: parsePrice(antamMatch[2]),
-      updatedAt: now,
-    });
-  }
+  const antamRegex = /href="\/pasar\/antam\/">Antam\s*\(LM\)<\/a><\/td>\s*<td[^>]*>Rp([\d,]+)<\/td>\s*<td[^>]*>Rp([\d,]+)<\/td>/;
+  const m = html.match(antamRegex);
+  if (!m) return null;
 
-  // Galeri24 (standalone): <a>Galeri24</a></td> <td>Rp2,775,000</td> <td>Rp2,605,000</td>
-  const galeriRegex = /(?<!\()Galeri24<\/a><\/td>\s*<td[^>]*>Rp([\d,]+)<\/td>\s*<td[^>]*>Rp([\d,]+)<\/td>/;
-  const galeriMatch = html.match(galeriRegex);
-  if (galeriMatch) {
-    results.push({
-      brand: 'galeri24',
-      sellPrice: parsePrice(galeriMatch[1]),
-      buybackPrice: parsePrice(galeriMatch[2]),
-      updatedAt: now,
-    });
-  }
+  return {
+    brand: 'antam',
+    sellPrice: parsePrice(m[1]),
+    buybackPrice: parsePrice(m[2]),
+    updatedAt: now,
+  };
+}
 
-  return results;
+/**
+ * Primary source for Galeri24: goldpedia.org/pasar/galeri24/
+ * Uses the dedicated page which shows Galeri24 murni (bukan Antam di Galeri24).
+ * HTML structure (as of May 2026):
+ *   <div id="buy"  class="tab-content active"><div class="price-top"><span class="price">2,822,000</span>  ← sell
+ *   <div id="sell" class="tab-content">       <div class="price-top"><span class="price">2,646,000</span>  ← buyback
+ */
+async function scrapeGaleri24FromGoldpedia(): Promise<GoldPriceData | null> {
+  const res = await fetch('https://www.goldpedia.org/pasar/galeri24/', {
+    signal: AbortSignal.timeout(15000),
+    headers: FETCH_HEADERS,
+  });
+  if (!res.ok) return null;
+  const html = await res.text();
+  const now = new Date().toISOString();
+
+  // sell price: inside id="buy" tab (harga beli konsumen)
+  const sellMatch = html.match(/id="buy"[^>]*>[\s\S]*?<span class="price">([\d,]+)<\/span>/);
+  // buyback price: inside id="sell" tab (harga jual konsumen ke toko)
+  const buybackMatch = html.match(/id="sell"[^>]*>[\s\S]*?<span class="price">([\d,]+)<\/span>/);
+
+  const sellPrice = sellMatch ? parsePrice(sellMatch[1]) : 0;
+  const buybackPrice = buybackMatch ? parsePrice(buybackMatch[1]) : 0;
+
+  if (sellPrice === 0 && buybackPrice === 0) return null;
+
+  return {
+    brand: 'galeri24',
+    sellPrice,
+    buybackPrice,
+    updatedAt: now,
+  };
 }
 
 /**
@@ -124,20 +142,25 @@ async function scrapeLogamMulia(): Promise<GoldPriceData | null> {
 }
 
 async function fetchGoldPrices(): Promise<GoldPriceData[]> {
-  let results: GoldPriceData[] = [];
+  const results: GoldPriceData[] = [];
 
-  // Strategy 1: goldpedia.org (has both Antam + Galeri24 with buyback)
-  try {
-    results = await scrapeGoldpedia();
-  } catch {
-    // Silently fail, try fallback
-  }
+  // Fetch Antam and Galeri24 in parallel
+  const [antamResult, galeriResult] = await Promise.allSettled([
+    scrapeAntamFromGoldpedia().catch(() => null),
+    scrapeGaleri24FromGoldpedia().catch(() => null),
+  ]);
 
-  // Strategy 2: If no Antam from goldpedia, try logammulia.com
+  const antam = antamResult.status === 'fulfilled' ? antamResult.value : null;
+  const galeri = galeriResult.status === 'fulfilled' ? galeriResult.value : null;
+
+  if (antam) results.push(antam);
+  if (galeri) results.push(galeri);
+
+  // Fallback for Antam: logammulia.com
   if (!results.find((r) => r.brand === 'antam')) {
     try {
-      const antam = await scrapeLogamMulia();
-      if (antam) results.push(antam);
+      const antamFallback = await scrapeLogamMulia();
+      if (antamFallback) results.push(antamFallback);
     } catch {
       // Silently fail
     }
@@ -145,29 +168,22 @@ async function fetchGoldPrices(): Promise<GoldPriceData[]> {
 
   // Fill missing brands with zero (UI shows "tidak tersedia")
   if (!results.find((r) => r.brand === 'antam')) {
-    results.push({
-      brand: 'antam',
-      sellPrice: 0,
-      buybackPrice: 0,
-      updatedAt: new Date().toISOString(),
-    });
+    results.push({ brand: 'antam', sellPrice: 0, buybackPrice: 0, updatedAt: new Date().toISOString() });
   }
   if (!results.find((r) => r.brand === 'galeri24')) {
-    results.push({
-      brand: 'galeri24',
-      sellPrice: 0,
-      buybackPrice: 0,
-      updatedAt: new Date().toISOString(),
-    });
+    results.push({ brand: 'galeri24', sellPrice: 0, buybackPrice: 0, updatedAt: new Date().toISOString() });
   }
 
   return results;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const force = searchParams.get('force') === '1';
+
   try {
-    // Serve from cache if fresh
-    if (cache && Date.now() - cache.fetchedAt < CACHE_TTL_MS) {
+    // Serve from cache if fresh (unless force refresh requested)
+    if (!force && cache && Date.now() - cache.fetchedAt < CACHE_TTL_MS) {
       return NextResponse.json({
         data: cache.data,
         cached: true,

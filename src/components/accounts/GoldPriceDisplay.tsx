@@ -18,7 +18,7 @@ export default function GoldPriceDisplay({
   purchasePricePerGram,
 }: GoldPriceDisplayProps) {
   const formatIDR = useFormatIDR();
-  const { price, isLoading, isError } = useGoldPrice(brand);
+  const { price, isLoading, isError, isFetching, forceRefetch } = useGoldPrice(brand);
   const brandLabel = GOLD_BRANDS.find((b) => b.value === brand)?.label ?? brand;
 
   const totalPurchase = Math.round(purchasePricePerGram * weightGrams);
@@ -58,11 +58,35 @@ export default function GoldPriceDisplay({
             {brandLabel} · {weightGrams}g
           </span>
         </div>
-        {updatedTime && (
-          <span className="text-caption text-text-muted">
-            {updatedTime}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {updatedTime && (
+            <span className="text-caption text-text-muted">
+              {updatedTime}
+            </span>
+          )}
+          <button
+            onClick={() => forceRefetch()}
+            disabled={isFetching}
+            title="Refresh harga emas"
+            className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-border transition-colors disabled:opacity-40"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={isFetching ? 'animate-spin' : ''}
+            >
+              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Harga Beli (user's purchase price) */}

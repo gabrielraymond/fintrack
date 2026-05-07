@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { GoldBrand } from '@/types';
 
 export interface GoldPrice {
@@ -16,8 +16,9 @@ interface GoldPriceResponse {
   cachedAt: string;
 }
 
-async function fetchGoldPrices(): Promise<GoldPrice[]> {
-  const res = await fetch('/api/gold-prices');
+async function fetchGoldPrices(force = false): Promise<GoldPrice[]> {
+  const url = force ? '/api/gold-prices?force=1' : '/api/gold-prices';
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch gold prices');
   const json: GoldPriceResponse = await res.json();
   return json.data;
@@ -33,20 +34,30 @@ export const goldPriceKeys = {
  * Auto-refreshes every 30 minutes.
  */
 export function useGoldPrices() {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: goldPriceKeys.all,
-    queryFn: fetchGoldPrices,
+    queryFn: () => fetchGoldPrices(false),
     staleTime: 30 * 60 * 1000,
     refetchInterval: 30 * 60 * 1000,
     retry: 2,
   });
+
+  const forceRefetch = async () => {
+    const fresh = await fetchGoldPrices(true);
+    queryClient.setQueryData(goldPriceKeys.all, fresh);
+    return fresh;
+  };
+
+  return { ...query, forceRefetch };
 }
 
 /**
  * Returns the price for a specific gold brand.
  */
 export function useGoldPrice(brand: GoldBrand | null) {
-  const { data: prices, ...rest } = useGoldPrices();
+  const { data: prices, forceRefetch, isFetching, ...rest } = useGoldPrices();
   const price = brand ? prices?.find((p) => p.brand === brand) ?? null : null;
-  return { price, ...rest };
+  return { price, forceRefetch, isFetching, ...rest };
 }
